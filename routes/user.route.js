@@ -29,7 +29,7 @@ const confirm = (req) =>{
   const hashedSign = req.get('hashedSign');
 
   const comparingSign = md5(ts + req.body + md5("dungnoiaihet"))
-  // console.log(moment().unix());
+  console.log(comparingSign);
   if (ts <= moment().unix() - 150) {
     return 1;
   }
@@ -53,7 +53,7 @@ const confirm = (req) =>{
 
 }
 
-router.get('/api/customer/', async (req, res) => {
+router.get('/customer/', async (req, res) => {
 
   // // console.log(moment().unix());
 
@@ -103,7 +103,7 @@ router.get('/api/customer/', async (req, res) => {
   });
 })
 
-router.get('/api/transaction/', async (req, res) => {
+router.get('/transaction/', async (req, res) => {
 
   const sign = req.get('sign');
   const keyPublic = new NodeRSA(process.huuTien.RSA_PUBLICKEY);
