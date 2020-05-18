@@ -51,10 +51,14 @@ app.use(function (err, req, res, next) {
   res.status(statusCode).send('View error log on console.');
 })
 
-const PORT = 3000;
-app.listen(PORT, _ => {
-  console.log(`API is running at http://localhost:${PORT}`);
+const PORT = process.env.PORT || 8000;
+app.listen(PORT, () => {
+  console.log(`API running on port ${PORT}`)
 })
+// const PORT = 3000;
+// app.listen(PORT, _ => {
+//   console.log(`API is running at http://localhost:${PORT}`);
+// })
 
 // const NodeRSA = require('node-rsa');
 // const key = new NodeRSA({b: 512});

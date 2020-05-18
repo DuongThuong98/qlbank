@@ -30,7 +30,7 @@ const confirm = (req) =>{
 
   const comparingSign = md5(ts + req.body + md5("dungnoiaihet"))
   // console.log(moment().unix());
-  if (ts <= moment().unix() - 60) {
+  if (ts <= moment().unix() - 150) {
     return 1;
   }
 
