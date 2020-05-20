@@ -24,12 +24,14 @@ router.post('/', async (req, res) => {
 })
 
 const confirm = (req) =>{
-  const ts = req.get('ts');
+  // const ts = req.get('ts');
+  const ts = req.headers['ts'];
   const partnerCode = req.get('partnerCode');
   const hashedSign = req.get('hashedSign');
 
+  // console.log(ts)
   const comparingSign = md5(ts + req.body + md5("dungnoiaihet"))
-  console.log(comparingSign);
+  // console.log(comparingSign);
   if (ts <= moment().unix() - 150) {
     return 1;
   }
@@ -53,12 +55,10 @@ const confirm = (req) =>{
 
 }
 
+
 router.get('/customer/', async (req, res) => {
-
-  // // console.log(moment().unix());
-
   var con = confirm(req);
-  // console.log(con);
+
   if (con == 1) {
     return res.status(400).send({
       message: 'Thời gian request quá hạn'
@@ -161,6 +161,31 @@ router.get('/transaction/', async (req, res) => {
 
   });
 })
+
+
+
+router.get('/testcustomer/', async (req, res) => {
+  
+  await usersModel.findOne({ _id: req.body.id }, (err, data) => {
+    if (err) {
+      return res
+        .status(500)
+        .send({ message: 'Đã có lỗi xảy ra, vui lòng thử lại!' });
+    }
+    if (data) {
+      return res
+        .status(200)
+        .send({ user: data });
+    }
+    else{
+      return res
+      .status(403)
+      .send({ message: "Không có dữ liệu" });
+    }
+
+  });
+})
+
 
 
 
