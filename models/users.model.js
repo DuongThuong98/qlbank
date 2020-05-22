@@ -14,7 +14,7 @@ const UserSchema = mongoose.Schema(
 	// 	"avatar": "12345",
 	// }
 	{
-		userId: String, // Tai khoan ngan hang, chỉ số dài 7 kí tự. Vd: "4224201"
+		accountNumber: String, // Tai khoan ngan hang, chỉ số dài 7 kí tự. Vd: "4224201"
 		username: String,
 		passwordHash: String,
 		name: String, // Tên đầy đủ
