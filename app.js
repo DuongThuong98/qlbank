@@ -16,7 +16,7 @@ app.use(express.json());
 //connecting to the database
 mongoose.Promise = global.Promise;
 mongoose
-	.connect(config.mongodb.localUrl, {
+	.connect(config.mongodb.trieuURL, {
 		useNewUrlParser: true,
 		useUnifiedTopology: true,
 		useFindAndModify: false,
@@ -37,6 +37,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/users", require("./routes/user.route"));
 app.use("/api/banks", require("./routes/bank.route"));
+app.use("/api/external", require("./routes/external.route"));
 
 app.use((req, res, next) => {
 	res.status(404).send("NOT FOUND");

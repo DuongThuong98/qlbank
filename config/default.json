@@ -1,7 +1,8 @@
 {
 	"mongodb": {
 		"localUrl": "mongodb://localhost:27017/InternetBanking",
-		"url": "mongodb+srv://admin:admin@cluster0-rqen3.mongodb.net/test?retryWrites=true&w=majority"
+		"url": "mongodb+srv://admin:admin@cluster0-rqen3.mongodb.net/test?retryWrites=true&w=majority",
+		"trieuURL": "mongodb+srv://admin:admin@cluster0-vef1q.mongodb.net/InternetBanking"
 	},
 	"auth": {
 		"secret": "secretKey",
