@@ -4,6 +4,8 @@ const md5 = require("md5");
 const NodeRSA = require("node-rsa");
 const usersModel = require("../models/users.model");
 const process = require("../config/process.config");
+const { Validator } = require("node-input-validator");
+var validator = require("email-validator");
 
 const router = express.Router();
 
@@ -36,6 +38,20 @@ const confirm = (req) => {
 
 // ----- Register new user -----
 router.post("/", async (req, res) => {
+	const v = new Validator(req.body, {
+		email: "required|email",
+		password: "required",
+	});
+
+	v.check().then((matched) => {
+		if (!matched) {
+			res.status(400).send(v.errors);
+		}
+	});
+
+	let isValidEmail = validator.validate(req.body.email);
+	if (!isValidEmail) res.status(400).send("Email không hợp lệ!");
+
 	const user = new usersModel(req.body);
 	user.setPasswordHash(req.body.password);
 	user

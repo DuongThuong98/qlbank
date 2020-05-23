@@ -7,14 +7,15 @@ module.exports =
  function (req, res, next) {
   const token = req.headers['x-access-token'];
   if (token) {
-    jwt.verify(token, config.auth.secret, function (err, payload) {
-      if (err)
-        throw createError(401, err);
+    // jwt.verify(token, config.auth.secret, function (err, payload) {
+    //   if (err)
+    //     throw createError(401, err);
 
-      // console.log(payload);
-      req.tokenPayload = payload;
+    //   // console.log(payload);
+    //   req.tokenPayload = payload;
+    console.log(token)
       next();
-    })
+    // })
   } else {
     throw createError(401, 'No accessToken found.');
   }
