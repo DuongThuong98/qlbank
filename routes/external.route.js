@@ -81,7 +81,7 @@ router.post("/transaction/", async (req, res) => {
 	const sign = req.get("sign");
 	const keyPublic = new NodeRSA(process.huuTien.RSA_PUBLICKEY);
 
-	// bodyjson: {id: _id, amount: 50000}
+	// bodyjson: {sentId: _id, bankId: 1, receivedId: _id, amount: 50000, message: "Tien an 2020", [timestamps]}
 	var veri = keyPublic.verify(req.body, sign, "base64", "base64");
 	var con = confirm(req);
 	// console.log(con);
@@ -110,17 +110,26 @@ router.post("/transaction/", async (req, res) => {
 	}
 	await usersModel.findOne(
 		{ accountNumber: req.body.id },
-		async (err, data) => {
+		async (err, user) => {
 			if (err) {
 				return res
 					.status(500)
 					.send({ message: "Đã có lỗi xảy ra, vui lòng thử lại!" });
 			}
-			if (data) {
-				// ? tại sao trả về 400?
-				data.balance += req.body.amount;
-				await data.save();
-				return res.json({ username: data.name, balance: data.balance });
+			if (user) {
+				const userNewBalance = user.balance + req.body.amount;
+				user.balance = userNewBalance;
+				await user
+					.save()
+					.then((newData) => {
+						if (newData.balance === userNewBalance) {
+							return res.json({ message: "Giao dịch thành công" });
+						}
+						return res.json({ message: "Không giao dịch được" });
+					})
+					.catch((err) => {
+						throw new Error(err);
+					});
 			} else {
 				return res.status(403).send({ message: "Không có dữ liệu" });
 			}
