@@ -16,7 +16,8 @@ app.use(express.json());
 //connecting to the database
 mongoose.Promise = global.Promise;
 mongoose
-	.connect(process.env.mongoURL || config.mongodb.localURL, {
+	// .connect(process.env.mongoURL || config.mongodb.localURL, {
+	.connect(config.mongodb.localUrl, {
 		useNewUrlParser: true,
 		useUnifiedTopology: true,
 		useFindAndModify: false,
