@@ -84,4 +84,12 @@ router.get("/", async (req, res) => {
 	});
 });
 
+router.delete("/:id", async (req, res) => {
+	const id = req.params.id;
+	const user = await usersModel.remove({ _id: id }, (err, data) => {
+		if (err) throw new Error();
+		if (data) res.json(data);
+	});
+});
+
 module.exports = router;
