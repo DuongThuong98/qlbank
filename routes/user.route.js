@@ -36,6 +36,7 @@ const confirm = (req) => {
 	}
 };
 
+
 // ----- Register new user -----
 router.post("/", async (req, res) => {
 	const v = new Validator(req.body, {

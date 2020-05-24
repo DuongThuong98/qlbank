@@ -9,4 +9,4 @@ const BankSchema = mongoose.Schema({
 });
 
 const Bank = mongoose.model("Bank", BankSchema);
-module.exports = Bank;
+module.expogitrts = Bank;
