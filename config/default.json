@@ -1,12 +1,11 @@
 {
-  "mongodb": {
-    "localURL": "mongodb://localhost:27017/test1",
-    "url": "mongodb+srv://admin:admin@cluster0-rqen3.mongodb.net/test?retryWrites=true&w=majority"
-  },
-  "auth": {
-    "secret": "secretKey",
-    "expiresIn": "10m",
-    "refreshTokenSz": 80
-  }
+	"mongodb": {
+		"localUrl": "mongodb://localhost:27017/InternetBanking",
+		"url": "mongodb+srv://admin:admin@cluster0-rqen3.mongodb.net/test?retryWrites=true&w=majority"
+	},
+	"auth": {
+		"secret": "secretKey",
+		"expiresIn": "10m",
+		"refreshTokenSz": 80
+	}
 }
-
