@@ -17,8 +17,9 @@ const confirm = (req) => {
 	if (ts <= moment().unix() - 150) {
 		return 1;
 	}
-
-	if (partnerCode != "huuTien123" && partnerCode != "baoSon123") {
+	
+	
+	if (partnerCode != "3TBank" && partnerCode != "baoSon123") {
 		return 2;
 	}
 
