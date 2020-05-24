@@ -18,7 +18,7 @@ const confirm = (req) => {
 		return 1;
 	}
 
-	if (partnerCode != "huuTien123") {
+	if (partnerCode != "huuTien123" && partnerCode != "baoSon123") {
 		return 2;
 	}
 
@@ -76,15 +76,15 @@ router.post("/customer/", async (req, res) => {
 //
 router.post("/transaction/", async (req, res) => {
 	// req -> headers [ts, partnerCode, hashedSign] + [sign (req.body-RSA)]
-	// req -> body {id: 1, amount}
-	// response -> username
+	// req -> bodyjson: {sentId: _id, bankId: 1, receivedId: _id, amount: 50000, content: "Tien an 2020", [timestamps]}
+	// response -> "thành công hay không"
 	const sign = req.get("sign");
 	const keyPublic = new NodeRSA(process.huuTien.RSA_PUBLICKEY);
 
-	// bodyjson: {sentId: _id, bankId: 1, receivedId: _id, amount: 50000, message: "Tien an 2020", [timestamps]}
+	// bodyjson: {sentId: _id, bankId: 1, receivedId: _id, amount: 50000, content: "Tien an 2020", [timestamps]}
 	var veri = keyPublic.verify(req.body, sign, "base64", "base64");
 	var con = confirm(req);
-	// console.log(con);
+
 	switch (con) {
 		case 1:
 			return res.status(400).send({
@@ -109,7 +109,7 @@ router.post("/transaction/", async (req, res) => {
 		});
 	}
 	await usersModel.findOne(
-		{ accountNumber: req.body.id },
+		{ accountNumber: req.body.receivedId },
 		async (err, user) => {
 			if (err) {
 				return res
