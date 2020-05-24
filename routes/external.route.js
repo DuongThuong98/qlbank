@@ -80,7 +80,7 @@ router.post("/transaction/", async (req, res) => {
 	// req -> bodyjson: {sentId: _id, bankId: 1, receivedId: _id, amount: 50000, content: "Tien an 2020", [timestamps]}
 	// response -> "thành công hay không"
 	const sign = req.get("sign");
-	const keyPublic = new NodeRSA(process.huuTien.RSA_PUBLICKEY);
+	const keyPublic = new NodeRSA(process.huuTien.PUBLICKEY_FROM_TIEN);
 
 	// bodyjson: {sentId: _id, bankId: 1, receivedId: _id, amount: 50000, content: "Tien an 2020", [timestamps]}
 	var veri = keyPublic.verify(req.body, sign, "base64", "base64");
