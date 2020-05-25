@@ -1,43 +1,10 @@
 const express = require("express");
-const moment = require("moment");
-const md5 = require("md5");
-const NodeRSA = require("node-rsa");
 const usersModel = require("../models/users.model");
-const process = require("../config/process.config");
 const { Validator } = require("node-input-validator");
 var validator = require("email-validator");
 
 const router = express.Router();
 
-const confirm = (req) => {
-	const ts = req.get("ts");
-	const partnerCode = req.get("partnerCode");
-	const hashedSign = req.get("hashedSign");
-
-	const comparingSign = md5(ts + req.body + md5("dungnoiaihet"));
-	console.log(`${comparingSign} - ${hashedSign}`);
-	if (ts <= moment().unix() - 150) {
-		return 1;
-	}
-
-	// console.log(partnerCode)
-	if (partnerCode != "huuTien123") {
-		return 2;
-	}
-
-	if (hashedSign != comparingSign) {
-		return 3;
-	}
-
-	if (!req.body.id) {
-		return 4;
-	} else {
-		return 0;
-	}
-};
-
-
-// ----- Register new user -----
 router.post("/", async (req, res) => {
 	const v = new Validator(req.body, {
 		email: "required|email",
@@ -85,9 +52,10 @@ router.get("/", async (req, res) => {
 	});
 });
 
+// ----- Delete user with id in database ----- INTERNAL
 router.delete("/:id", async (req, res) => {
 	const id = req.params.id;
-	const user = await usersModel.remove({ _id: id }, (err, data) => {
+	await usersModel.remove({ _id: id }, (err, data) => {
 		if (err) throw new Error();
 		if (data) res.json(data);
 	});
