@@ -14,7 +14,6 @@ const confirm = (req) => {
 	const hashedSign = req.get("hashedSign");
 
 	const comparingSign = md5(ts + req.body + md5("dungnoiaihet"));
-	console.log(`${comparingSign} - ${hashedSign}`);
 	if (ts <= moment().unix() - 150) {
 		return 1;
 	}
@@ -69,7 +68,10 @@ router.post("/customer/", async (req, res) => {
 			}
 			if (data) {
 				// Chỉ trả về tên của người dùng thôi.
-				return res.status(200).send({ user: data.name.toUpperCase() });
+				return res.status(200).send({
+					accountNumber: data.accountNumber,
+					name: data.name.toUpperCase(),
+				});
 			} else {
 				return res.status(403).send({ message: "Không có dữ liệu" });
 			}
@@ -110,10 +112,10 @@ router.post("/transaction/", async (req, res) => {
 	let Key_Public;
 	switch (req.get("partnerCode")) {
 		case "baoSon123":
-			Key_Public = process.huuTien.RSA_PUBLICKEY;
+			Key_Public = process.Bank_BAOSON.RSA_PUBLICKEY;
 			break;
 		case "3TBank":
-			Key_Public = process.huuTien.RSA_PUBLICKEY;
+			Key_Public = process.Bank_3T.RSA_PUBLICKEY;
 			break;
 		default:
 			Key_Public = 0;
@@ -184,17 +186,13 @@ router.post("/3TBank/customer", async (req, res) => {
 
 router.get("/3TBank/transaction", async (req, res) => {
 	const timeStamp = Date.now();
-	const partnerCode = "3TBank";
+	const partnerCode = "SAPHASANBank";
 	const bodyJson = {
 		accountNumber: req.body.accountNumber,
 		amount: req.body.amount,
 	};
 	const signature = timeStamp + bodyJson + md5("dungnoiaihet");
-	const privateKey = new NodeRSA(
-		"-----BEGIN RSA PRIVATE KEY-----\n" +
-			"MIICXwIBAAKBgQCyceITLtFoy4KzMgmr6NEnvk1VBH7pRuyyg7IkXc3kBspKs9CIErm2eJtEtduIPQK+3AgiQW+fjL1dDMQr7ENZiGzWhEPoSbU348mjg1fxFDztFB4QiqAd7UUvj1kK2/UT+D0C6Sgc0O69C9lRGahPSAX+7ZArGIodtfuOKPenEwIDAQABAoGBAKU98CvzXte8HPvziiE3Jve2scXYs+0xUF6+tWgXtWFDKHCksqZPMMpYRPALt48hcDltZ9rQ3ZzRp0lTWRWTY4kmnjUm1W4E7uFmJJc7KySZJH9XNbvlOceVIKPIWjZvvQ93wov03G2ajdv/NC2BT57xQ+YTaMe3GQkJGTX7V/KBAkEA8TQmBdaExOBF7mrGKMrrrvYnErtZWN4dLdPK+ipfmeSM/oD25/UHfPHbh8tkHbt9vfz4PF/3NdAWcZiMNzAKPwJBAL1kLC/SM9NFfxCLfQrmP1qTASWs4IVsxeYU4+dUVcUwL0g4WlUgCjrVCFYomWen1wCbqCvlGpON9H7CLR7fpi0CQQDI3cXAXNoqXh6+orqtI/fLt3/okI6ifC5OiK7jUEBXF0b3dwynNJ3sxjksyAty2z2m5zEOjlh/vu/B3+j82IvfAkEAqlR2PQgCnicpkPqymePb5JzDclvZjYX3Medl1L4PaYndbElqTJbFPIYtujdHSGc1wZE8nUWuMjiARKRkKhkgfQJBAIqWxELwATG3541h/7MKI2tnTC0F3g7nTLJWtgIiqYfyw/jFdsVGWZUlJriyS6LxYh+0zMdRtdscw4iWEPJ2vM4=\n" +
-			"-----END RSA PRIVATE KEY-----"
-	);
+	const privateKey = new NodeRSA(process.SAPHASAN.RSA_PRIVATEKEY);
 	const sign = privateKey.sign(bodyJson, "base64", "base64");
 	await axios
 		.post(`${SERVER_URL}/api/external/transaction`, bodyJson, {
