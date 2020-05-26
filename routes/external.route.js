@@ -159,54 +159,59 @@ router.post("/transaction/", async (req, res) => {
 	);
 });
 
-const SERVER_URL = "https://qlbank1.herokuapp.com";
-
 router.post("/3TBank/customer", async (req, res) => {
-	const timeStamp = Date.now();
-	const partnerCode = "3TBank"; // SAPHASANBank
-	const bodyJson = { id: "12345" };
-	const signature = timeStamp + bodyJson + md5("dungnoiaihet");
+	if (!req.body.accountNumber || isNaN(+req.body.accountNumber))
+		return res.status(500).json({ message: "Please provide valid id." });
+
+	const timeStamp = moment().unix() * 1000;
+	const partnerCode = "SAPHASANBank"; // SAPHASANBank
+	const signature = timeStamp + md5("dungnoiaihet");
 
 	await axios
-		.post(`${SERVER_URL}/api/external/customer`, bodyJson, {
+		.get(`${process.Bank_3T.SERVER_URL}/api/v1/user`, {
 			headers: {
 				ts: timeStamp,
 				partnerCode: partnerCode,
 				hashedSign: md5(signature),
 			},
+			params: {
+				accountId: +req.body.accountNumber,
+			},
 		})
 		.then((result) => {
-			const { data } = result;
-			if (result.data) res.json(result.data);
+			if (result.data) return res.json(result.data);
 		})
 		.catch((error) => {
-			res.status(500).json(error);
+			return res.status(500).json(error);
 		});
 });
 
-router.get("/3TBank/transaction", async (req, res) => {
-	const timeStamp = Date.now();
+router.post("/3TBank/transaction", async (req, res) => {
+	const timeStamp = moment().unix() * 1000;
 	const partnerCode = "SAPHASANBank";
 	const bodyJson = {
-		accountNumber: req.body.accountNumber,
-		amount: req.body.amount,
+		accountId: +req.body.accountNumber,
+		cost: +req.body.amount,
 	};
-	const signature = timeStamp + bodyJson + md5("dungnoiaihet");
+	const signature = bodyJson + timeStamp + md5("dungnoiaihet");
 	const privateKey = new NodeRSA(process.SAPHASAN.RSA_PRIVATEKEY);
 	const sign = privateKey.sign(bodyJson, "base64", "base64");
 	await axios
-		.post(`${SERVER_URL}/api/external/transaction`, bodyJson, {
-			headers: {
-				ts: timeStamp,
-				partnerCode: partnerCode,
-				hashedSign: md5(signature),
-				sign: sign,
-			},
-			// data: `id=${customerId}`,
-		})
+		.post(
+			`${process.Bank_3T.SERVER_URL}/api/v1/user/change-balance`,
+			bodyJson,
+			{
+				headers: {
+					ts: timeStamp,
+					partnerCode: partnerCode,
+					hashedSign: md5(signature),
+					sign: sign,
+				},
+			}
+		)
 		.then((result) => {
-			const { data } = result;
-			res.json(data);
+			if (result.data);
+			res.json(result.data);
 		})
 		.catch((error) => {
 			res.json(error);
