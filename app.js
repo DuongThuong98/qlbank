@@ -43,6 +43,8 @@ app.use((req, res, next) => {
 	res.status(404).send("NOT FOUND");
 });
 
+
+
 app.use(function (err, req, res, next) {
 	console.log(err.stack);
 	// console.log(err.status);
