@@ -13,6 +13,17 @@ app.use(morgan("dev"));
 app.use(cors());
 app.use(express.json());
 
+//swagger
+//swagger
+const pathToSwaggerUi = require("swagger-ui-dist").absolutePath();
+app.use(Express.static(pathToSwaggerUi));
+
+var swaggerUi = require("swagger-ui-express"),
+  swaggerDocument = require("./swagger.json");
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+
+
 //connecting to the database
 mongoose.Promise = global.Promise;
 mongoose
