@@ -1,10 +1,14 @@
 const express = require("express");
+const bcrypt = require("bcryptjs");
 const usersModel = require("../models/users.model");
 const { Validator } = require("node-input-validator");
 var validator = require("email-validator");
+const passport = require("passport");
+const jwt = require("jsonwebtoken");
 
 const router = express.Router();
 
+// --- ADD new user (register) ---
 router.post("/", async (req, res) => {
 	const v = new Validator(req.body, {
 		email: "required|email",
