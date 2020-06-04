@@ -12,7 +12,7 @@ router.post("/login", (req, res) => {
 			if (error) throw new Error();
 			const username = user.username;
 			const accessToken = generateAccessToken(username);
-			return res.json(accessToken);
+			return res.json({ accessToken: accessToken });
 		});
 	})(req, res);
 });
@@ -22,8 +22,8 @@ const generateAccessToken = (username) =>
 		{
 			username: username,
 		},
-		"secretKey"
-		// { expiresIn: '1m' },
+		"secretKey",
+		{ expiresIn: "10m" }
 	);
 
 module.exports = router;
