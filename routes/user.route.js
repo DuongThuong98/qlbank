@@ -39,6 +39,19 @@ router.post("/", async (req, res) => {
 		});
 });
 
+// --- Get user's info based on JWT Token ---
+router.get("/me", (req, res) => {
+	if (req.user) {
+		const result = req.user;
+		console.log(result);
+		delete result["passwordHash"];
+		console.log(result.passwordHash);
+		res.json(result);
+	} else
+		res.status(404).send({ message: "Không tìm thấy thông tin người dùng" });
+	// usersModel.findOne()
+});
+
 // ----- Get all users in database ----- INTERNAL
 router.get("/", async (req, res) => {
 	const allUsers = await usersModel
