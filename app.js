@@ -2,16 +2,25 @@ const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
 const mongoose = require("mongoose");
-require("express-async-errors");
-
+const passport = require("passport");
 const config = require("./config/default.json");
-const verify = require("./middlewares/auth.mdw");
+
+require("./middlewares/passport");
+require("express-async-errors");
 
 const app = express();
 
 app.use(morgan("dev"));
 app.use(cors());
 app.use(express.json());
+
+//swagger
+const pathToSwaggerUi = require("swagger-ui-dist").absolutePath();
+app.use(express.static(pathToSwaggerUi));
+
+var swaggerUi = require("swagger-ui-express"),
+	swaggerDocument = require("./swagger.json");
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 //connecting to the database
 mongoose.Promise = global.Promise;
@@ -35,9 +44,18 @@ app.get("/", (req, res) => {
 	});
 });
 
-app.use("/api/users", require("./routes/user.route"));
-app.use("/api/banks", require("./routes/bank.route"));
+app.use("/api/auth", require("./routes/auth.route"));
 app.use("/api/external", require("./routes/external.route"));
+app.use(
+	"/api/users",
+	passport.authenticate("jwt", { session: false }),
+	require("./routes/user.route")
+);
+app.use(
+	"/api/banks",
+	passport.authenticate("jwt", { session: false }),
+	require("./routes/bank.route")
+);
 
 app.use((req, res, next) => {
 	res.status(404).send("NOT FOUND");

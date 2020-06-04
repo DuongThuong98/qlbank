@@ -2,10 +2,8 @@ const mongoose = require("mongoose");
 
 const UserReceiverListSchema = mongoose.Schema(
 	{
-		sentUserId: String,
-		sentBankId: String,
-		receivedUserId: String,
-		receivedBankId: String,
+		accountNumber: String,
+		bankId: String,
 		savedName: String,
 	},
 	{

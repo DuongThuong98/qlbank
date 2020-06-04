@@ -1,10 +1,14 @@
 const express = require("express");
+const bcrypt = require("bcryptjs");
 const usersModel = require("../models/users.model");
 const { Validator } = require("node-input-validator");
 var validator = require("email-validator");
+const passport = require("passport");
+const jwt = require("jsonwebtoken");
 
 const router = express.Router();
 
+// --- ADD new user (register) ---
 router.post("/", async (req, res) => {
 	const v = new Validator(req.body, {
 		email: "required|email",
@@ -33,6 +37,19 @@ router.post("/", async (req, res) => {
 				.status(500)
 				.send({ message: "Đã có lỗi xảy ra, vui lòng thử lại" });
 		});
+});
+
+// --- Get user's info based on JWT Token ---
+router.get("/me", (req, res) => {
+	if (req.user) {
+		const result = req.user;
+		console.log(result);
+		delete result["passwordHash"];
+		console.log(result.passwordHash);
+		res.json(result);
+	} else
+		res.status(404).send({ message: "Không tìm thấy thông tin người dùng" });
+	// usersModel.findOne()
 });
 
 // ----- Get all users in database ----- INTERNAL

@@ -29,8 +29,12 @@
     "node-input-validator": "^4.2.0",
     "node-rsa": "^1.0.8",
     "nodemon": "^2.0.4",
+    "passport": "^0.4.1",
+    "passport-jwt": "^4.0.0",
+    "passport-local": "^1.0.0",
     "rand-token": "^1.0.1",
     "swagger-jsdoc": "^4.0.0",
-    "swagger-ui-express": "^4.1.4"
+    "swagger-ui-express": "^4.1.4",
+    "swagger-ui": "^3.25.2"
   }
 }
