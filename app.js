@@ -24,8 +24,9 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 //connecting to the database
 mongoose.Promise = global.Promise;
+// process.env.mongoURL ||
 mongoose
-	.connect(process.env.mongoURL || config.mongodb.localUrl, {
+	.connect( config.mongodb.localUrl, {
 		useNewUrlParser: true,
 		useUnifiedTopology: true,
 		useFindAndModify: false,
@@ -48,14 +49,15 @@ app.use("/api/auth", require("./routes/auth.route"));
 app.use("/api/external", require("./routes/external.route"));
 app.use(
 	"/api/users",
-	passport.authenticate("jwt", { session: false }),
+	// passport.authenticate("jwt", { session: false }),
 	require("./routes/user.route")
 );
 app.use(
 	"/api/banks",
-	passport.authenticate("jwt", { session: false }),
+	// passport.authenticate("jwt", { session: false }),
 	require("./routes/bank.route")
 );
+app.use("/api/user-receiver", require("./routes/userReceiver.route"));
 
 app.use((req, res, next) => {
 	res.status(404).send("NOT FOUND");
