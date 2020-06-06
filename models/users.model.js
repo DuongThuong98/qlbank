@@ -18,12 +18,14 @@ const UserSchema = mongoose.Schema(
 		username: String,
 		passwordHash: String,
 		name: String, // Tên đầy đủ
+		role: String, // "customer", "employee", "admin"
 		email: String,
 		phone: String,
 		balance: { type: Number, default: 50000 },
 		permission: { type: Boolean, default: true },
 		refreshToken: String,
 		rdt: Date,
+		receivers: { type: Array, default: [] }, // [{accountNumber: String, bankId: String, savedName: String}]
 	},
 	{
 		timestamps: true,

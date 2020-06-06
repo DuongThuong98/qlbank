@@ -1,43 +1,14 @@
 const express = require("express");
-const moment = require("moment");
-const md5 = require("md5");
-const NodeRSA = require("node-rsa");
+const bcrypt = require("bcryptjs");
 const usersModel = require("../models/users.model");
-const process = require("../config/process.config");
 const { Validator } = require("node-input-validator");
 var validator = require("email-validator");
+const passport = require("passport");
+const jwt = require("jsonwebtoken");
 
 const router = express.Router();
 
-const confirm = (req) => {
-	const ts = req.get("ts");
-	const partnerCode = req.get("partnerCode");
-	const hashedSign = req.get("hashedSign");
-
-	const comparingSign = md5(ts + req.body + md5("dungnoiaihet"));
-	console.log(`${comparingSign} - ${hashedSign}`);
-	if (ts <= moment().unix() - 150) {
-		return 1;
-	}
-
-	// console.log(partnerCode)
-	if (partnerCode != "huuTien123") {
-		return 2;
-	}
-
-	if (hashedSign != comparingSign) {
-		return 3;
-	}
-
-	if (!req.body.id) {
-		return 4;
-	} else {
-		return 0;
-	}
-};
-
-
-// ----- Register new user -----
+// --- ADD new user (register) ---
 router.post("/", async (req, res) => {
 	const v = new Validator(req.body, {
 		email: "required|email",
@@ -68,6 +39,19 @@ router.post("/", async (req, res) => {
 		});
 });
 
+// --- Get user's info based on JWT Token ---
+router.get("/me", (req, res) => {
+	if (req.user) {
+		const result = req.user;
+		console.log(result);
+		delete result["passwordHash"];
+		console.log(result.passwordHash);
+		res.json(result);
+	} else
+		res.status(404).send({ message: "Không tìm thấy thông tin người dùng" });
+	// usersModel.findOne()
+});
+
 // ----- Get all users in database ----- INTERNAL
 router.get("/", async (req, res) => {
 	const allUsers = await usersModel
@@ -82,6 +66,15 @@ router.get("/", async (req, res) => {
 	}
 	return res.json({
 		error: "Không có dữ liệu nào của người dùng!",
+	});
+});
+
+// ----- Delete user with id in database ----- INTERNAL
+router.delete("/:id", async (req, res) => {
+	const id = req.params.id;
+	await usersModel.remove({ _id: id }, (err, data) => {
+		if (err) throw new Error();
+		if (data) res.json(data);
 	});
 });
 
