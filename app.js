@@ -49,12 +49,12 @@ app.use("/api/auth", require("./routes/auth.route"));
 app.use("/api/external", require("./routes/external.route"));
 app.use(
 	"/api/users",
-	// passport.authenticate("jwt", { session: false }),
+	passport.authenticate("jwt", { session: false }),
 	require("./routes/user.route")
 );
 app.use(
 	"/api/banks",
-	// passport.authenticate("jwt", { session: false }),
+	passport.authenticate("jwt", { session: false }),
 	require("./routes/bank.route")
 );
 app.use("/api/user-receiver", require("./routes/userReceiver.route"));
