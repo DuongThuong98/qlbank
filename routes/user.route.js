@@ -52,6 +52,24 @@ router.get("/me", (req, res) => {
 	// usersModel.findOne()
 });
 
+// --- Update user's info based on JWT Token ---
+router.put("/me", async (req, res) => {
+	const { name, email, phone } = req.body;
+	const userToUpdate = {
+		name: name,
+		email: email,
+		phone: phone,
+	};
+	await usersModel.findOneAndUpdate(
+		{ username: req.user.username },
+		userToUpdate,
+		(err, result) => {
+			if (err) throw new Error();
+			else res.json(result);
+		}
+	);
+});
+
 // ----- Get all users in database ----- INTERNAL
 router.get("/", async (req, res) => {
 	const allUsers = await usersModel
