@@ -87,6 +87,24 @@ router.get("/", async (req, res) => {
 	});
 });
 
+// ----- Get specific user info with his/her id -----
+router.get("/:id", async (req, res) => {
+	const id = req.params.id;
+	const findingUser = await usersModel
+		.find({ accountNumber: id })
+		.then((result) => result)
+		.catch((err) => {
+			throw new Error(err);
+		});
+
+	if (findingUser.length > 0) {
+		return res.json(findingUser);
+	}
+	return res.json({
+		error: "Không có dữ liệu nào của người dùng!",
+	});
+});
+
 // ----- Delete user with id in database ----- INTERNAL
 router.delete("/:id", async (req, res) => {
 	const id = req.params.id;
