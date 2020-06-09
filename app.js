@@ -24,8 +24,9 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 //connecting to the database
 mongoose.Promise = global.Promise;
+// process.env.mongoURL ||
 mongoose
-	.connect(process.env.mongoURL || config.mongodb.localUrl, {
+	.connect( config.mongodb.localUrl, {
 		useNewUrlParser: true,
 		useUnifiedTopology: true,
 		useFindAndModify: false,
@@ -56,10 +57,13 @@ app.use(
 	passport.authenticate("jwt", { session: false }),
 	require("./routes/bank.route")
 );
+app.use("/api/user-receiver", require("./routes/userReceiver.route"));
 
 app.use((req, res, next) => {
 	res.status(404).send("NOT FOUND");
 });
+
+
 
 app.use(function (err, req, res, next) {
 	console.log(err.stack);
@@ -68,7 +72,7 @@ app.use(function (err, req, res, next) {
 	res.status(statusCode).send("View error log on console.");
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
 	console.log(`API running on port ${PORT}`);
 });
