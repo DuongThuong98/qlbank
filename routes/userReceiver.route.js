@@ -16,6 +16,20 @@ router.get("/", async (req, res) => {
 		: res.json({ message: "Không userReceiver" });
 });
 
+router.get("/:id", async (req, res) => {
+	const id = req.params.id;
+	const userReceiver = await UserReceiverModel
+		.find({_id:id})
+		.then((data) => data)
+		.catch((err) => {
+			throw new Error(err);
+		});
+
+		userReceiver.length !== 0
+		? res.json(userReceiver)
+		: res.json({ message: "Không tìm thấy userReceiver này" });
+});
+
 // Thêm một receiver
 router.post("/", (req, res) => {
 	// {

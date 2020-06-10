@@ -2,10 +2,10 @@ const mongoose = require("mongoose");
 
 const TransactionSchema = mongoose.Schema(
 	{
-		sentUserId: Number,
-		sentBankId: Number,
-		receivedUserId: Number,
-		receivedBankId: Number,
+		sentUserId: String,
+		sentBankId: String,
+		receivedUserId: String,
+		receivedBankId: String,
 		isDebt: Boolean, // Có phải trả nợ không?
 		isReceiverPaid: Boolean, // Người nhận trả phí giao dịch? => True: người nhận trả, false: người gửi trả.
 		amount: Number,
