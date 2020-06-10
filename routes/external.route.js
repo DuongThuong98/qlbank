@@ -5,6 +5,10 @@ const NodeRSA = require("node-rsa");
 const usersModel = require("../models/users.model");
 const process = require("../config/process.config");
 const axios = require("axios");
+const hash = require("object-hash");
+const openPgp = require("openpgp");
+const fs = require("fs");
+const path = require("path");
 
 const router = express.Router();
 
@@ -12,7 +16,6 @@ const confirm = (req) => {
 	const ts = req.get("ts");
 	const partnerCode = req.get("partnerCode");
 	const hashedSign = req.get("hashedSign");
-
 	const comparingSign = md5(ts + req.body + md5("dungnoiaihet"));
 	if (ts <= moment().unix() - 150) {
 		return 1;
@@ -34,7 +37,7 @@ const confirm = (req) => {
 };
 
 // --EXTERNAL-SERVER--- nhận request, hash và trả về tên người dùng cho ngân hàng khác ---
-router.post("/customer/", async (req, res) => {
+router.post("/customer", async (req, res) => {
 	// req -> headers [ts, partnerCode, hashedSign]
 	// req -> body {id: 1}
 	// response -> username
@@ -80,7 +83,7 @@ router.post("/customer/", async (req, res) => {
 });
 
 // --EXTERNAL-SERVER--- nhận request, hash + verify và nạp tiền
-router.post("/transaction/", async (req, res) => {
+router.post("/transaction", async (req, res) => {
 	// req -> headers [ts, partnerCode, hashedSign] + [sign (req.body-RSA)]
 	// req -> bodyjson: {sentId: _id, bankId: 1, accountNumber: _id, amount: 50000, content: "Tien an 2020", [timestamps]}
 	// response -> "thành công hay không"
@@ -145,7 +148,9 @@ router.post("/transaction/", async (req, res) => {
 					.save()
 					.then((newData) => {
 						if (newData.balance === userNewBalance) {
-							return res.json({ message: "Giao dịch thành công" });
+							const privateKey = new NodeRSA(process.SAPHASAN.RSA_PRIVATEKEY);
+							const sign = privateKey.sign("SAPHASANBank", "base64", "base64");
+							return res.json({ sign: sign, message: "Giao dịch thành công" });
 						}
 						return res.json({ message: "Không giao dịch được" });
 					})
@@ -216,6 +221,73 @@ router.post("/3TBank/transaction", async (req, res) => {
 		.catch((error) => {
 			res.json(error);
 		});
+});
+
+router.post("/BAOSON/customer", async (req, res) => {
+	const data = {
+		id: req.body.accountNumber,
+	};
+	let result = await axios({
+		method: "post",
+		url: "http://192.168.43.103:3000/banks/detail", // link ngan hang muon chuyen toi
+		data: data,
+		headers: {
+			nameBank: "SAPHASANBank",
+			ts: moment().unix(),
+			sig: hash(moment().unix() + data.id + "secretkey"),
+		},
+	});
+	if (!result) {
+		return res.status(404).json({ info: false });
+	} else {
+		return res.status(201).json(result.data);
+	}
+});
+
+router.post("/BAOSON/transaction", async (req, res) => {
+	const privateKeyArmored = fs.readFileSync(
+		path.join(__dirname, "../config/PGPKeys/SAPHASAN-PGP-private.asc"),
+		"utf8"
+	); // encrypted private key
+	const passphrase = "12345"; // password that private key is encrypted with
+	const {
+		keys: [privateKey],
+	} = await openPgp.key.readArmored(privateKeyArmored);
+	await privateKey.decrypt(passphrase);
+	const { data: cleartext } = await openPgp.sign({
+		message: openPgp.cleartext.fromText("From SAPHASANBank"), // CleartextMessage or Message object
+		privateKeys: [privateKey], // for signing
+	});
+	let data = {
+		id: req.body.accountNumber,
+		amount: req.body.amount,
+	};
+	let result = await axios({
+		method: "post",
+		url: "http://192.168.43.103:3000/banks/transfers", // link ngan hang muon chuyen toi
+		data: data,
+		headers: {
+			nameBank: "SAPHASANBank",
+			ts: moment().unix(),
+			sig: hash(moment().unix() + data + "secretkey"),
+			sigpgp: JSON.stringify(cleartext),
+		},
+	});
+
+	//Verify signature back
+	const publicKeyArmored = fs.readFileSync(
+		path.join(__dirname, "../config/PGPKeys/BAOSON-PGP-public.asc"),
+		"utf8"
+	); // encrypted private key
+	const verified = await openPgp.verify({
+		message: await openPgp.cleartext.readArmored(result.data.sign),
+		publicKeys: (await openPgp.key.readArmored(publicKeyArmored)).keys, // for verification
+	});
+	const { valid } = verified.signatures[0];
+	if (valid) {
+		return res.json(result.data);
+	}
+	return res.status(404).end();
 });
 
 module.exports = router;
