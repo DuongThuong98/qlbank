@@ -53,7 +53,7 @@ router.get("/me", (req, res) => {
 });
 
 // --- Update user's info based on JWT Token ---
-router.put("/me", async (req, res) => {
+router.patch("/me", async (req, res) => {
 	const { name, email, phone } = req.body;
 	const userToUpdate = {
 		name: name,
