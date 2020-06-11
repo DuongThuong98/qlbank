@@ -15,12 +15,12 @@ app.use(cors());
 app.use(express.json());
 
 //swagger
-const pathToSwaggerUi = require("swagger-ui-dist").absolutePath();
-app.use(express.static(pathToSwaggerUi));
+// const pathToSwaggerUi = require("swagger-ui-dist").absolutePath();
+// app.use(express.static(pathToSwaggerUi));
 
-var swaggerUi = require("swagger-ui-express"),
-	swaggerDocument = require("./swagger.json");
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+// var swaggerUi = require("swagger-ui-express"),
+// 	swaggerDocument = require("./swagger.json");
+// app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 //connecting to the database
 mongoose.Promise = global.Promise;
@@ -49,7 +49,7 @@ app.use("/api/auth", require("./routes/auth.route"));
 app.use("/api/external", require("./routes/external.route"));
 app.use(
 	"/api/users",
-	passport.authenticate("jwt", { session: false }),
+	// passport.authenticate("jwt", { session: false }),
 	require("./routes/user.route")
 );
 app.use(
