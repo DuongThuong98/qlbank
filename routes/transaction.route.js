@@ -40,6 +40,8 @@ router.post("/", (req, res) => {
 		});
 });
 
+
+
 router.patch("/", async (req, res) => {
 	const { _id, isDebt, content } = req.body
 	if (!_id) {
@@ -97,6 +99,8 @@ router.delete("/", async (req, res) => {
 
 
 });
+
+////////
 
 
 module.exports = router;

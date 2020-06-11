@@ -69,6 +69,197 @@ router.get("/", async (req, res) => {
 	});
 });
 
+router.get("/all-receiver-list", async (req, res) => {
+	const { _id} = req.body
+	try {
+		const user = await usersModel.findOne({ _id })
+		if (user) {
+	
+			return res.status(200).json({ data: user.receivers })
+		}
+		else {
+			return res.status(400).json({ message: "Không tìm thấy khách hàng này." })
+		}
+	}
+	catch (err) {
+		console.log('err: ', err)
+		return res.status(500).json({ message: "Đã có lỗi xảy ra." })
+	}
+});
+
+router.get("/one-receiver-list", async (req, res) => {
+	// {
+	// 	"accountNumber": "00000003",
+    //     "_id": "5ee2430bc2b4724218e7d1ea"
+	// }
+	const { _id, accountNumber} = req.body
+	try {
+		const user = await usersModel.findOne({ _id })
+		const recs = user.receivers;
+		if (user) {
+			let flag = 0;
+			recs.forEach(rec => {
+				if(rec.accountNumber == accountNumber)
+				{
+					flag = 1;
+					return res.status(200).json({ data: rec })
+				}
+			});
+			if(flag==0){
+			return res.status(400).json({ message: "Không tìm thấy receiver này." })}
+			}
+		else {
+			return res.status(400).json({ message: "Không tìm thấy khách hàng này." })
+		}
+	}
+	catch (err) {
+		console.log('err: ', err)
+		return res.status(500).json({ message: "Đã có lỗi xảy ra." })
+	}
+});
+
+
+//---Update user
+router.patch("/", async (req, res) => {
+	// {
+	// 	"balance": 50000,
+    //     "permission": true,
+    //     "receivers": [],
+    //     "_id": "5ee222fc372b270017d284c3",
+    //     "accountNumber": "000004",
+    //     "username": "thuyloan",
+    //     "name": "Nguyễn Thúy Loan",
+    //     "email": "thuyloan@gmail.com",
+    //     "phone": "09112345534",
+    //     "passwordHash": "$2a$10$Qg2oDhpV8UJSKURez/ldHOVloYjWR.bo0.DrJERgsKnVefdlTOHwC",
+	// }
+	const { _id, balance, permission,accountNumber,
+		username,name,email,phone} = req.body
+	if (!_id) {
+		return res.status(400).json({ message: "Id không được rỗng" })
+	}
+
+	try {
+		const user = await usersModel.findOne({ _id })
+		if (user) {
+			const result = await usersModel.findOneAndUpdate({ _id }, 
+						{ balance: balance || user.balance,
+							permission: permission || user.permission,
+							accountNumber: accountNumber || user.accountNumber,
+							username: username || user.username,
+							name: name || user.name,
+							email: email || user.email,
+							phone: phone || user.phone,
+						})
+			if (result) {
+				const data = await usersModel.findOne({ _id: result._id })
+				if (data) {
+					return res.status(200).json({ message: "Cập nhật thành công.", data })
+				}
+			}
+		}
+		else {
+			return res.status(400).json({ message: "Không tìm thấy khách hàng này." })
+		}
+	}
+	catch (err) {
+		console.log('err: ', err)
+		return res.status(500).json({ message: "Đã có lỗi xảy ra." })
+	}
+});
+
+router.patch("/receiver-list", async (req, res) => {
+	// {
+	// 	"receiver": {
+	// 		"accountNumber": "5edb5f2d9bd2c03f1c410814",
+	// 		"bankId": 0,
+	// 		"savedName": "Thuong"
+	// 	},
+    //     "_id": "5ee24345c2b4724218e7d1ec"
+	// }
+	const { _id,receiver} = req.body
+	if (!_id) {
+		return res.status(400).json({ message: "Id không được rỗng" })
+	}
+
+	try {
+		const user = await usersModel.findOne({ _id })
+		
+		if (user) {
+			let newReceivers = user.receivers;
+			// console.log(user)
+			// console.log(newReceivers)
+			newReceivers.forEach(rec => {
+				if(rec.accountNumber == receiver.accountNumber||
+					rec.savedname == receiver.savedName)
+					{
+						return res.status(400).json({ message: "Trùng tài khoản hoặc tên lưu trữ" })
+					}
+			});
+	
+			newReceivers.push(receiver);
+			const result = await usersModel.findOneAndUpdate({ _id }, 
+						{ 
+							receivers: newReceivers || user.receivers,	
+						})
+			if (result) {
+				const data = await usersModel.findOne({ _id: result._id })
+				if (data) {
+					return res.status(200).json({ message: "Cập nhật thành công.", data })
+				}
+			}
+			// return res.status(400).json({ message: "TEST" })
+		}
+		else {
+			return res.status(400).json({ message: "Không tìm thấy khách hàng này." })
+		}
+	}
+	catch (err) {
+		console.log('err: ', err)
+		return res.status(500).json({ message: "Đã có lỗi xảy ra." })
+	}
+});
+
+router.patch("/change-password", async (req, res) => {
+	const { _id,password, newPassword} = req.body
+	if (!_id) {
+		return res.status(400).json({ message: "Id không được rỗng" })
+	}
+
+	try {
+		const user = await usersModel.findOne({ _id })
+		
+		if (user) {
+			let isTrueOldPass = await bcrypt.compare(password, user.passwordHash);
+			if(isTrueOldPass){
+			newPasswordHash = bcrypt.hashSync(newPassword, 10);
+			const result = await usersModel.findOneAndUpdate({ _id }, 
+						{ 
+							passwordHash: newPasswordHash || user.passwordHash,	
+						})
+			if (result) {
+				const data = await usersModel.findOne({ _id: result._id })
+				if (data) {
+					return res.status(200).json({ message: "Cập nhật thành công.", data })
+				}
+			}
+		}else
+		{
+			return res.status(400).json({ message: "Password cũ sai" })
+		}
+		}
+		else {
+			return res.status(400).json({ message: "Không tìm thấy khách hàng này." })
+		}
+	}
+	catch (err) {
+		console.log('err: ', err)
+		return res.status(500).json({ message: "Đã có lỗi xảy ra." })
+	}
+});
+
+
+
 // ----- Delete user with id in database ----- INTERNAL
 router.delete("/:id", async (req, res) => {
 	const id = req.params.id;

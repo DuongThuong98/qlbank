@@ -17,13 +17,13 @@ passport.use(
 				if (err) return done(err);
 				if (rows.length === 0) {
 					return done(null, false, {
-						message: "Invalid username or password!",
+						message: "Invalid username!",
 					});
 				} else {
 					bcrypt.compare(password, rows.passwordHash).then((res) => {
 						if (!res) {
 							return done(null, false, {
-								message: "Invalid password or username!",
+								message: "Invalid password!",
 							});
 						}
 						return done(null, rows);
