@@ -26,7 +26,7 @@ app.use(express.json());
 mongoose.Promise = global.Promise;
 // process.env.mongoURL ||
 mongoose
-	.connect( config.mongodb.localUrl, {
+	.connect(process.env.mongoURL||config.mongodb.localUrl , {
 		useNewUrlParser: true,
 		useUnifiedTopology: true,
 		useFindAndModify: false,
