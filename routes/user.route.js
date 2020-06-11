@@ -43,13 +43,10 @@ router.post("/", async (req, res) => {
 router.get("/me", (req, res) => {
 	if (req.user) {
 		const result = req.user;
-		console.log(result);
-		delete result["passwordHash"];
-		console.log(result.passwordHash);
+		result.passwordHash = "";
 		res.json(result);
 	} else
 		res.status(404).send({ message: "Không tìm thấy thông tin người dùng" });
-	// usersModel.findOne()
 });
 
 // --- Update user's info based on JWT Token ---
