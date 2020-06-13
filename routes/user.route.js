@@ -5,9 +5,11 @@ const { Validator } = require("node-input-validator");
 var validator = require("email-validator");
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
+const { totp } = require("otplib");
+const nodemailer = require("nodemailer");
 
 const router = express.Router();
-
+const KeyGenCode = "key-gen-otp-code";
 // --- ADD new user (register) ---
 router.post("/", async (req, res) => {
 	const v = new Validator(req.body, {
@@ -23,6 +25,10 @@ router.post("/", async (req, res) => {
 
 	let isValidEmail = validator.validate(req.body.email);
 	if (!isValidEmail) res.status(400).send("Email không hợp lệ!");
+
+	usersModel.findOne({ email: req.body.email }).exec((err, user) => {
+		if (user) return res.status(400).send({ message: "Email is exist!" });
+	});
 
 	const user = new usersModel(req.body);
 	user.setPasswordHash(req.body.password);
@@ -144,9 +150,8 @@ router.patch("/", async (req, res) => {
 	//     "phone": "09112345534",
 	//     "passwordHash": "$2a$10$Qg2oDhpV8UJSKURez/ldHOVloYjWR.bo0.DrJERgsKnVefdlTOHwC",
 	// }
-
-	const { _id } = req.user;
 	const {
+		_id,
 		balance,
 		permission,
 		accountNumber,
@@ -202,8 +207,7 @@ router.patch("/receiver-list", async (req, res) => {
 	// 	},
 	//     "_id": "5ee24345c2b4724218e7d1ec"
 	// }
-	const { _id } = req.user;
-	const { receiver } = req.body;
+	const { _id, receiver } = req.body;
 	if (!_id) {
 		return res.status(400).json({ message: "Id không được rỗng" });
 	}
@@ -258,8 +262,7 @@ router.patch("/receiver-list", async (req, res) => {
 });
 
 router.patch("/change-password", async (req, res) => {
-	const { _id } = req.user;
-	const { password, newPassword } = req.body;
+	const { _id, password, newPassword } = req.body;
 	if (!_id) {
 		return res.status(400).json({ message: "Id không được rỗng" });
 	}
@@ -325,5 +328,91 @@ router.delete("/:id", async (req, res) => {
 		if (data) res.json(data);
 	});
 });
+
+// region forgot password
+router.post("/forgot-password", async (req, res) => {
+	const email = req.body.email;
+
+	usersModel
+		.findOne({
+			email: email,
+		})
+		.exec((err, user) => {
+			if (err) {
+				res.status(500).send({ message: err });
+				return;
+			}
+
+			if (!user) {
+				return res.status(404).send({ message: "User Not found." });
+			}
+
+			totp.options = { step: 300 };
+			const code = totp.generate(KeyGenCode);
+			var transporter = nodemailer.createTransport({
+				host: "smtp.gmail.com",
+				port: 465,
+				secure: true,
+				auth: {
+					user: "mail to send ",
+					pass: "pass",
+				},
+				tls: {
+					rejectUnauthorized: false,
+				},
+			});
+
+			var content = "";
+			content += `<div>
+        <h2>Use the code below to reset password!</h2>
+				<h1> ${code}</h1>
+				<p>This code will be exprired after 5 minutes!</p>
+				</div>  
+		`;
+
+			var mailOptions = {
+				from: `huuthoigialai@gmail.com`,
+				to: email,
+				subject: "Gửi Mã OTP",
+				html: content,
+			};
+
+			transporter.sendMail(mailOptions, function (error, info) {
+				if (error) {
+					console.log(error);
+					return res.status(400).json({ succes: false });
+				} else {
+					console.log("Email sent: " + info.response);
+					return res.json({ succes: true });
+				}
+			});
+		});
+});
+
+router.post("/verify-forgot-password", async (req, res) => {
+	const { code, newPassword, email } = req.body;
+	usersModel.findOne({ email: email }).exec((err, user) => {
+		if (err) return res.status(500).send({ message: err });
+		if (!user) return res.status(404).send({ message: "User Not found." });
+	});
+
+	const isValid = totp.check(code, KeyGenCode);
+	if (isValid) {
+		newPasswordHash = bcrypt.hashSync(newPassword, 10);
+		const result = await usersModel.findOneAndUpdate(
+			{ email },
+			{ passwordHash: newPasswordHash }
+		);
+		if (result) {
+			res.json({ succes: true, message: "Reset password success" });
+		} else {
+			res.status(401).json({ message: "Authentication error!" });
+		}
+	} else {
+		res.status(401).json({ message: "Code is invalid or expried!" });
+	}
+});
+
+//end region forgot password
 
 module.exports = router;
