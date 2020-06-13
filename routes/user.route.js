@@ -84,38 +84,15 @@ router.get("/", async (req, res) => {
 	});
 });
 
-// ----- Get specific user info with his/her id -----
-router.get("/:id", async (req, res) => {
-	const id = req.params.id;
-	const findingUser = await usersModel
-		.find({ accountNumber: id })
-		.then((result) => result)
-		.catch((err) => {
-			throw new Error(err);
-		});
-
-	if (findingUser.length > 0) {
-		return res.json(findingUser);
-	}
-	return res.json({
-		error: "Không có dữ liệu nào của người dùng!",
-	});
-});
-
 router.get("/all-receiver-list", async (req, res) => {
-	const { _id } = req.user
-	try {
-		const user = await usersModel.findOne({ _id });
-		if (user) {
-			return res.status(200).json({ data: user.receivers });
-		} else {
-			return res
-				.status(400)
-				.json({ message: "Không tìm thấy khách hàng này." });
+	const { user } = req;
+	if (user) {
+		if (user.receivers.length === 0) {
+			return res.status(200).json({ data: null });
 		}
-	} catch (err) {
-		console.log("err: ", err);
-		return res.status(500).json({ message: "Đã có lỗi xảy ra." });
+		return res.status(200).json({ data: req.user.receivers });
+	} else {
+		res.status(400).json({ message: "Không có thông tin người dùng" });
 	}
 });
 
@@ -124,7 +101,7 @@ router.post("/one-receiver-list", async (req, res) => {
 	// 	"accountNumber": "00000003",
 	//     "_id": "5ee2430bc2b4724218e7d1ea"
 	// }
-	const { _id} = req.user;
+	const { _id } = req.user;
 	const { accountNumber } = req.body;
 	try {
 		const user = await usersModel.findOne({ _id });
@@ -168,9 +145,16 @@ router.patch("/", async (req, res) => {
 	//     "passwordHash": "$2a$10$Qg2oDhpV8UJSKURez/ldHOVloYjWR.bo0.DrJERgsKnVefdlTOHwC",
 	// }
 
-	const { _id} = req.user;
-	const { balance, permission, accountNumber,
-		username, name, email, phone } = req.body
+	const { _id } = req.user;
+	const {
+		balance,
+		permission,
+		accountNumber,
+		username,
+		name,
+		email,
+		phone,
+	} = req.body;
 	if (!_id) {
 		return res.status(400).json({ message: "Id không được rỗng" });
 	}
@@ -218,8 +202,8 @@ router.patch("/receiver-list", async (req, res) => {
 	// 	},
 	//     "_id": "5ee24345c2b4724218e7d1ec"
 	// }
-	const { _id} = req.user;
-	const { receiver } = req.body
+	const { _id } = req.user;
+	const { receiver } = req.body;
 	if (!_id) {
 		return res.status(400).json({ message: "Id không được rỗng" });
 	}
@@ -274,8 +258,8 @@ router.patch("/receiver-list", async (req, res) => {
 });
 
 router.patch("/change-password", async (req, res) => {
-	const { _id} = req.user;
-	const { password, newPassword } = req.body
+	const { _id } = req.user;
+	const { password, newPassword } = req.body;
 	if (!_id) {
 		return res.status(400).json({ message: "Id không được rỗng" });
 	}
@@ -313,6 +297,24 @@ router.patch("/change-password", async (req, res) => {
 		console.log("err: ", err);
 		return res.status(500).json({ message: "Đã có lỗi xảy ra." });
 	}
+});
+
+// ----- Get specific user info with his/her id -----
+router.get("/:id", async (req, res) => {
+	const id = req.params.id;
+	const findingUser = await usersModel
+		.find({ accountNumber: id })
+		.then((result) => result)
+		.catch((err) => {
+			throw new Error(err);
+		});
+
+	if (findingUser.length > 0) {
+		return res.json(findingUser);
+	}
+	return res.json({
+		error: "Không có dữ liệu nào của người dùng!",
+	});
 });
 
 // ----- Delete user with id in database ----- INTERNAL
