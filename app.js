@@ -64,8 +64,6 @@ app.use((req, res, next) => {
 	res.status(404).send("NOT FOUND");
 });
 
-
-
 app.use(function (err, req, res, next) {
 	console.log(err.stack);
 	// console.log(err.status);
@@ -73,7 +71,7 @@ app.use(function (err, req, res, next) {
 	res.status(statusCode).send("View error log on console.");
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
 	console.log(`API running on port ${PORT}`);
 });
