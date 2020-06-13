@@ -94,9 +94,10 @@ router.get("/all-receiver-list", async (req, res) => {
 	const { user } = req;
 	if (user) {
 		if (user.receivers.length === 0) {
-			return res.status(200).json({ data: null });
+			const emptyArray = [];
+			return res.status(200).json(emptyArray);
 		}
-		return res.status(200).json({ data: req.user.receivers });
+		return res.status(200).json(req.user.receivers);
 	} else {
 		res.status(400).json({ message: "Không có thông tin người dùng" });
 	}
