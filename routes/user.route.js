@@ -70,7 +70,7 @@ router.get("/", async (req, res) => {
 });
 
 router.get("/all-receiver-list", async (req, res) => {
-	const { _id } = req.body
+	const { _id } = req.user
 	try {
 		const user = await usersModel.findOne({ _id })
 		if (user) {
@@ -87,12 +87,13 @@ router.get("/all-receiver-list", async (req, res) => {
 	}
 });
 
-router.get("/one-receiver-list", async (req, res) => {
+router.post("/one-receiver-list", async (req, res) => {
 	// {
 	// 	"accountNumber": "00000003",
 	//     "_id": "5ee2430bc2b4724218e7d1ea"
 	// }
-	const { _id, accountNumber } = req.body
+	const { _id} = req.user;
+	const { accountNumber } = req.body;
 	try {
 		const user = await usersModel.findOne({ _id })
 		const recs = user.receivers;
@@ -133,7 +134,9 @@ router.patch("/", async (req, res) => {
 	//     "phone": "09112345534",
 	//     "passwordHash": "$2a$10$Qg2oDhpV8UJSKURez/ldHOVloYjWR.bo0.DrJERgsKnVefdlTOHwC",
 	// }
-	const { _id, balance, permission, accountNumber,
+
+	const { _id} = req.user;
+	const { balance, permission, accountNumber,
 		username, name, email, phone } = req.body
 	if (!_id) {
 		return res.status(400).json({ message: "Id không được rỗng" })
@@ -178,7 +181,8 @@ router.patch("/receiver-list", async (req, res) => {
 	// 	},
 	//     "_id": "5ee24345c2b4724218e7d1ec"
 	// }
-	const { _id, receiver } = req.body
+	const { _id} = req.user;
+	const { receiver } = req.body
 	if (!_id) {
 		return res.status(400).json({ message: "Id không được rỗng" })
 	}
@@ -225,7 +229,8 @@ router.patch("/receiver-list", async (req, res) => {
 });
 
 router.patch("/change-password", async (req, res) => {
-	const { _id, password, newPassword } = req.body
+	const { _id} = req.user;
+	const { password, newPassword } = req.body
 	if (!_id) {
 		return res.status(400).json({ message: "Id không được rỗng" })
 	}
