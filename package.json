@@ -29,6 +29,8 @@
     "node-input-validator": "^4.2.0",
     "node-rsa": "^1.0.8",
     "nodemon": "^2.0.4",
+    "object-hash": "^2.0.3",
+    "openpgp": "^4.10.4",
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",

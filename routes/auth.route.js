@@ -10,17 +10,19 @@ router.post("/login", (req, res) => {
 		if (error || !user) return res.status(401).send(info);
 		req.login(user, { session: false }, async (error) => {
 			if (error) throw new Error();
-			const username = user.username;
-			const accessToken = generateAccessToken(username);
+			const { username, role } = user;
+			console.log(user);
+			const accessToken = generateAccessToken(username, role);
 			return res.json({ accessToken: accessToken });
 		});
 	})(req, res);
 });
 
-const generateAccessToken = (username) =>
+const generateAccessToken = (username, role) =>
 	jwt.sign(
 		{
 			username: username,
+			role: role,
 		},
 		"secretKey",
 		{ expiresIn: "10m" }

@@ -43,13 +43,28 @@ router.post("/", async (req, res) => {
 router.get("/me", (req, res) => {
 	if (req.user) {
 		const result = req.user;
-		console.log(result);
-		delete result["passwordHash"];
-		console.log(result.passwordHash);
+		result.passwordHash = "";
 		res.json(result);
 	} else
 		res.status(404).send({ message: "Không tìm thấy thông tin người dùng" });
-	// usersModel.findOne()
+});
+
+// --- Update user's info based on JWT Token ---
+router.patch("/me", async (req, res) => {
+	const { name, email, phone } = req.body;
+	const userToUpdate = {
+		name: name,
+		email: email,
+		phone: phone,
+	};
+	await usersModel.findOneAndUpdate(
+		{ username: req.user.username },
+		userToUpdate,
+		(err, result) => {
+			if (err) throw new Error();
+			else res.json(result);
+		}
+	);
 });
 
 // ----- Get all users in database ----- INTERNAL
@@ -69,21 +84,38 @@ router.get("/", async (req, res) => {
 	});
 });
 
+// ----- Get specific user info with his/her id -----
+router.get("/:id", async (req, res) => {
+	const id = req.params.id;
+	const findingUser = await usersModel
+		.find({ accountNumber: id })
+		.then((result) => result)
+		.catch((err) => {
+			throw new Error(err);
+		});
+
+	if (findingUser.length > 0) {
+		return res.json(findingUser);
+	}
+	return res.json({
+		error: "Không có dữ liệu nào của người dùng!",
+	});
+});
+
 router.get("/all-receiver-list", async (req, res) => {
 	const { _id } = req.user
 	try {
-		const user = await usersModel.findOne({ _id })
+		const user = await usersModel.findOne({ _id });
 		if (user) {
-
-			return res.status(200).json({ data: user.receivers })
+			return res.status(200).json({ data: user.receivers });
+		} else {
+			return res
+				.status(400)
+				.json({ message: "Không tìm thấy khách hàng này." });
 		}
-		else {
-			return res.status(400).json({ message: "Không tìm thấy khách hàng này." })
-		}
-	}
-	catch (err) {
-		console.log('err: ', err)
-		return res.status(500).json({ message: "Đã có lỗi xảy ra." })
+	} catch (err) {
+		console.log("err: ", err);
+		return res.status(500).json({ message: "Đã có lỗi xảy ra." });
 	}
 });
 
@@ -95,30 +127,31 @@ router.post("/one-receiver-list", async (req, res) => {
 	const { _id} = req.user;
 	const { accountNumber } = req.body;
 	try {
-		const user = await usersModel.findOne({ _id })
+		const user = await usersModel.findOne({ _id });
 		const recs = user.receivers;
 		if (user) {
 			let flag = 0;
-			recs.forEach(rec => {
+			recs.forEach((rec) => {
 				if (rec.accountNumber == accountNumber) {
 					flag = 1;
-					return res.status(200).json({ data: rec })
+					return res.status(200).json({ data: rec });
 				}
 			});
 			if (flag == 0) {
-				return res.status(400).json({ message: "Không tìm thấy receiver này." })
+				return res
+					.status(400)
+					.json({ message: "Không tìm thấy receiver này." });
 			}
+		} else {
+			return res
+				.status(400)
+				.json({ message: "Không tìm thấy khách hàng này." });
 		}
-		else {
-			return res.status(400).json({ message: "Không tìm thấy khách hàng này." })
-		}
-	}
-	catch (err) {
-		console.log('err: ', err)
-		return res.status(500).json({ message: "Đã có lỗi xảy ra." })
+	} catch (err) {
+		console.log("err: ", err);
+		return res.status(500).json({ message: "Đã có lỗi xảy ra." });
 	}
 });
-
 
 //---Update user
 router.patch("/", async (req, res) => {
@@ -139,13 +172,14 @@ router.patch("/", async (req, res) => {
 	const { balance, permission, accountNumber,
 		username, name, email, phone } = req.body
 	if (!_id) {
-		return res.status(400).json({ message: "Id không được rỗng" })
+		return res.status(400).json({ message: "Id không được rỗng" });
 	}
 
 	try {
-		const user = await usersModel.findOne({ _id })
+		const user = await usersModel.findOne({ _id });
 		if (user) {
-			const result = await usersModel.findOneAndUpdate({ _id },
+			const result = await usersModel.findOneAndUpdate(
+				{ _id },
 				{
 					balance: balance || user.balance,
 					permission: permission || user.permission,
@@ -154,21 +188,24 @@ router.patch("/", async (req, res) => {
 					name: name || user.name,
 					email: email || user.email,
 					phone: phone || user.phone,
-				})
+				}
+			);
 			if (result) {
-				const data = await usersModel.findOne({ _id: result._id })
+				const data = await usersModel.findOne({ _id: result._id });
 				if (data) {
-					return res.status(200).json({ message: "Cập nhật thành công.", data })
+					return res
+						.status(200)
+						.json({ message: "Cập nhật thành công.", data });
 				}
 			}
+		} else {
+			return res
+				.status(400)
+				.json({ message: "Không tìm thấy khách hàng này." });
 		}
-		else {
-			return res.status(400).json({ message: "Không tìm thấy khách hàng này." })
-		}
-	}
-	catch (err) {
-		console.log('err: ', err)
-		return res.status(500).json({ message: "Đã có lỗi xảy ra." })
+	} catch (err) {
+		console.log("err: ", err);
+		return res.status(500).json({ message: "Đã có lỗi xảy ra." });
 	}
 });
 
@@ -184,47 +221,55 @@ router.patch("/receiver-list", async (req, res) => {
 	const { _id} = req.user;
 	const { receiver } = req.body
 	if (!_id) {
-		return res.status(400).json({ message: "Id không được rỗng" })
+		return res.status(400).json({ message: "Id không được rỗng" });
 	}
 
 	try {
-		const user = await usersModel.findOne({ _id })
+		const user = await usersModel.findOne({ _id });
 
 		if (user) {
 			let newReceivers = user.receivers;
 			// console.log(user)
 			// console.log(newReceivers)
 			let flag = 0;
-			newReceivers.forEach(rec => {
-				if (rec.accountNumber == receiver.accountNumber ||
-					rec.savedname == receiver.savedName) {
+			newReceivers.forEach((rec) => {
+				if (
+					rec.accountNumber == receiver.accountNumber ||
+					rec.savedname == receiver.savedName
+				) {
 					flag = 1;
-					return res.status(400).json({ message: "Trùng tài khoản hoặc tên lưu trữ" })
+					return res
+						.status(400)
+						.json({ message: "Trùng tài khoản hoặc tên lưu trữ" });
 				}
 			});
 
-			if (flag = 0) {
+			if ((flag = 0)) {
 				newReceivers.push(receiver);
-				const result = await usersModel.findOneAndUpdate({ _id },
+				const result = await usersModel.findOneAndUpdate(
+					{ _id },
 					{
 						receivers: newReceivers || user.receivers,
-					})
+					}
+				);
 				if (result) {
-					const data = await usersModel.findOne({ _id: result._id })
+					const data = await usersModel.findOne({ _id: result._id });
 					if (data) {
-						return res.status(200).json({ message: "Cập nhật thành công.", data })
+						return res
+							.status(200)
+							.json({ message: "Cập nhật thành công.", data });
 					}
 				}
 			}
 			// return res.status(400).json({ message: "TEST" })
+		} else {
+			return res
+				.status(400)
+				.json({ message: "Không tìm thấy khách hàng này." });
 		}
-		else {
-			return res.status(400).json({ message: "Không tìm thấy khách hàng này." })
-		}
-	}
-	catch (err) {
-		console.log('err: ', err)
-		return res.status(500).json({ message: "Đã có lỗi xảy ra." })
+	} catch (err) {
+		console.log("err: ", err);
+		return res.status(500).json({ message: "Đã có lỗi xảy ra." });
 	}
 });
 
@@ -232,41 +277,43 @@ router.patch("/change-password", async (req, res) => {
 	const { _id} = req.user;
 	const { password, newPassword } = req.body
 	if (!_id) {
-		return res.status(400).json({ message: "Id không được rỗng" })
+		return res.status(400).json({ message: "Id không được rỗng" });
 	}
 
 	try {
-		const user = await usersModel.findOne({ _id })
+		const user = await usersModel.findOne({ _id });
 
 		if (user) {
 			let isTrueOldPass = await bcrypt.compare(password, user.passwordHash);
 			if (isTrueOldPass) {
 				newPasswordHash = bcrypt.hashSync(newPassword, 10);
-				const result = await usersModel.findOneAndUpdate({ _id },
+				const result = await usersModel.findOneAndUpdate(
+					{ _id },
 					{
 						passwordHash: newPasswordHash || user.passwordHash,
-					})
+					}
+				);
 				if (result) {
-					const data = await usersModel.findOne({ _id: result._id })
+					const data = await usersModel.findOne({ _id: result._id });
 					if (data) {
-						return res.status(200).json({ message: "Cập nhật thành công.", data })
+						return res
+							.status(200)
+							.json({ message: "Cập nhật thành công.", data });
 					}
 				}
 			} else {
-				return res.status(400).json({ message: "Password cũ sai" })
+				return res.status(400).json({ message: "Password cũ sai" });
 			}
+		} else {
+			return res
+				.status(400)
+				.json({ message: "Không tìm thấy khách hàng này." });
 		}
-		else {
-			return res.status(400).json({ message: "Không tìm thấy khách hàng này." })
-		}
-	}
-	catch (err) {
-		console.log('err: ', err)
-		return res.status(500).json({ message: "Đã có lỗi xảy ra." })
+	} catch (err) {
+		console.log("err: ", err);
+		return res.status(500).json({ message: "Đã có lỗi xảy ra." });
 	}
 });
-
-
 
 // ----- Delete user with id in database ----- INTERNAL
 router.delete("/:id", async (req, res) => {
