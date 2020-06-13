@@ -26,6 +26,10 @@ router.post("/", async (req, res) => {
   let isValidEmail = validator.validate(req.body.email);
   if (!isValidEmail) res.status(400).send("Email không hợp lệ!");
 
+  usersModel.findOne({ email: req.body.email }).exec((err, user) => {
+    if (user) return res.status(400).send({ message: "Email is exist!" });
+  });
+
   const user = new usersModel(req.body);
   user.setPasswordHash(req.body.password);
   user
