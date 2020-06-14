@@ -7,9 +7,10 @@ const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const { totp } = require("otplib");
 const nodemailer = require("nodemailer");
+const KeyGenCode = "key-gen-otp-code";
 
 const router = express.Router();
-const KeyGenCode = "key-gen-otp-code";
+
 // --- ADD new user (register) ---
 router.post("/", async (req, res) => {
 	const v = new Validator(req.body, {
@@ -90,27 +91,22 @@ router.get("/", async (req, res) => {
 	});
 });
 
-router.get("/all-receiver-list", async (req, res) => {
+router.get("/receiver-list", async (req, res) => {
 	const { user } = req;
 	if (user) {
 		if (user.receivers.length === 0) {
 			const emptyArray = [];
 			return res.status(200).json(emptyArray);
 		}
-		return res.status(200).json(req.user.receivers);
-	} else {
-		res.status(400).json({ message: "Không có thông tin người dùng" });
-	}
-});
-
-router.get("/me/new-receiver", async (req, res) => {
-	const { user } = req;
-	if (user) {
-		if (user.receivers.length === 0) {
-			const emptyArray = [];
-			return res.status(200).json(emptyArray);
-		}
-		return res.status(200).json(req.user.receivers);
+		const result = req.user.receivers.map((item, index) => {
+			return {
+				accountNumber: item.accountNumber,
+				savedName: item.savedName,
+				bankId: item.bankId,
+			};
+		});
+		// console.log(result);
+		return res.status(200).json(result);
 	} else {
 		res.status(400).json({ message: "Không có thông tin người dùng" });
 	}
@@ -151,60 +147,114 @@ router.post("/one-receiver-list", async (req, res) => {
 
 router.patch("/receiver-list", async (req, res) => {
 	// {
-	// 	"receiver": {
 	// 		"accountNumber": "5edb5f2d9bd2c03f1c410814",
 	// 		"bankId": 0,
 	// 		"savedName": "Thuong"
-	// 	},
 	//     "_id": "5ee24345c2b4724218e7d1ec"
 	// }
 	const { user } = req;
-	const { receiver } = req.body;
-
-	try {
-		if (user) {
-			let newReceivers = user.receivers;
-			// console.log(user)
-			// console.log(newReceivers)
-			let flag = 0;
-			newReceivers.forEach((rec) => {
-				if (
-					rec.accountNumber == receiver.accountNumber ||
-					rec.savedname == receiver.savedName
-				) {
-					flag = 1;
-					return res
-						.status(400)
-						.json({ message: "Trùng tài khoản hoặc tên lưu trữ" });
-				}
-			});
-
-			if ((flag = 0)) {
-				newReceivers.push(receiver);
-				const result = await usersModel.findOneAndUpdate(
-					{ _id },
-					{
-						receivers: newReceivers || user.receivers,
-					}
-				);
-				if (result) {
-					const data = await usersModel.findOne({ _id: result._id });
-					if (data) {
-						return res
-							.status(200)
-							.json({ message: "Cập nhật thành công.", data });
-					}
-				}
+	const receiver = req.body;
+	if (user) {
+		let { receivers } = user;
+		// console.log(user)
+		// console.log(receivers)
+		let flag = 0;
+		receivers.forEach((rec) => {
+			if (
+				rec.accountNumber == receiver.accountNumber ||
+				rec.savedName == receiver.savedName
+			) {
+				flag = 1;
+				return res
+					.status(400)
+					.json({ message: "Trùng tài khoản hoặc tên lưu trữ" });
 			}
-			// return res.status(400).json({ message: "TEST" })
-		} else {
-			return res
-				.status(400)
-				.json({ message: "Không tìm thấy khách hàng này." });
+		});
+		console.log(receivers);
+
+		receivers.push(receiver);
+		const result = await usersModel.findOneAndUpdate(
+			{ accountNumber: user.accountNumber },
+			{
+				receivers: receivers,
+			}
+		);
+		if (result) {
+			return res.status(200).json({ message: "Cập nhật thành công." });
 		}
-	} catch (err) {
-		console.log("err: ", err);
-		return res.status(500).json({ message: "Đã có lỗi xảy ra." });
+	} else {
+		return res.status(400).json({ message: "Không tìm thấy khách hàng này." });
+	}
+});
+
+router.patch("/receiver-list-update/", async (req, res) => {
+	// {
+	// 		"accountNumber": "5edb5f2d9bd2c03f1c410814",
+	// 		"bankId": 0,
+	// 		"savedName": "Thuong"
+	// }
+	const { user } = req;
+	const receiver = req.body;
+	if (user) {
+		let { receivers } = user;
+		let flag = 0;
+		receivers.forEach((rec) => {
+			if (
+				rec.accountNumber == receiver.accountNumber &&
+				rec.bankId == receiver.bankId
+			) {
+				flag = 1;
+				rec.savedName = receiver.savedName;
+			}
+		});
+		if (flag === 0)
+			return res.status(400).json({ message: "Không tìm thấy người nhận này" });
+		const result = await usersModel.findOneAndUpdate(
+			{ accountNumber: user.accountNumber },
+			{
+				receivers: receivers,
+			}
+		);
+		if (result) {
+			return res.status(200).json({ message: "Cập nhật thành công." });
+		}
+	} else {
+		return res.status(400).json({ message: "Không tìm thấy khách hàng này." });
+	}
+});
+
+router.delete("/receiver-list", async (req, res) => {
+	// {
+	// 		"accountNumber": "5edb5f2d9bd2c03f1c410814",
+	// 		"bankId": 0,
+	// }
+	const { user } = req;
+	const receiver = req.body;
+	if (user) {
+		let { receivers } = user;
+		let flag = -1;
+
+		// finding index
+		flag = receivers.findIndex((element, index, array) => {
+			if (
+				element.bankId === receiver.bankId &&
+				element.accountNumber === receiver.accountNumber
+			)
+				return element;
+		});
+
+		if (flag !== -1) receivers.splice(flag, 1);
+		const result = await usersModel.findOneAndUpdate(
+			{ accountNumber: user.accountNumber },
+			{
+				receivers: receivers,
+			}
+		);
+		if (result) {
+			return res.status(200).json({ message: "Cập nhật thành công." });
+		}
+	} else {
+		return res.status(400).json({ message: "Không tìm thấy khách hàng này." });
 	}
 });
 
@@ -279,91 +329,5 @@ router.delete("/:id", async (req, res) => {
 		if (data) res.json(data);
 	});
 });
-
-// region forgot password
-router.post("/forgot-password", async (req, res) => {
-	const email = req.body.email;
-
-	usersModel
-		.findOne({
-			email: email,
-		})
-		.exec((err, user) => {
-			if (err) {
-				res.status(500).send({ message: err });
-				return;
-			}
-
-			if (!user) {
-				return res.status(404).send({ message: "User Not found." });
-			}
-
-			totp.options = { step: 300 };
-			const code = totp.generate(KeyGenCode);
-			var transporter = nodemailer.createTransport({
-				host: "smtp.gmail.com",
-				port: 465,
-				secure: true,
-				auth: {
-					user: "mail to send ",
-					pass: "pass",
-				},
-				tls: {
-					rejectUnauthorized: false,
-				},
-			});
-
-			var content = "";
-			content += `<div>
-        <h2>Use the code below to reset password!</h2>
-				<h1> ${code}</h1>
-				<p>This code will be exprired after 5 minutes!</p>
-				</div>  
-		`;
-
-			var mailOptions = {
-				from: `huuthoigialai@gmail.com`,
-				to: email,
-				subject: "Gửi Mã OTP",
-				html: content,
-			};
-
-			transporter.sendMail(mailOptions, function (error, info) {
-				if (error) {
-					console.log(error);
-					return res.status(400).json({ succes: false });
-				} else {
-					console.log("Email sent: " + info.response);
-					return res.json({ succes: true });
-				}
-			});
-		});
-});
-
-router.post("/verify-forgot-password", async (req, res) => {
-	const { code, newPassword, email } = req.body;
-	usersModel.findOne({ email: email }).exec((err, user) => {
-		if (err) return res.status(500).send({ message: err });
-		if (!user) return res.status(404).send({ message: "User Not found." });
-	});
-
-	const isValid = totp.check(code, KeyGenCode);
-	if (isValid) {
-		newPasswordHash = bcrypt.hashSync(newPassword, 10);
-		const result = await usersModel.findOneAndUpdate(
-			{ email },
-			{ passwordHash: newPasswordHash }
-		);
-		if (result) {
-			res.json({ succes: true, message: "Reset password success" });
-		} else {
-			res.status(401).json({ message: "Authentication error!" });
-		}
-	} else {
-		res.status(401).json({ message: "Code is invalid or expried!" });
-	}
-});
-
-//end region forgot password
 
 module.exports = router;
