@@ -103,19 +103,31 @@ router.get("/all-receiver-list", async (req, res) => {
 	}
 });
 
+router.get("/me/new-receiver", async (req, res) => {
+	const { user } = req;
+	if (user) {
+		if (user.receivers.length === 0) {
+			const emptyArray = [];
+			return res.status(200).json(emptyArray);
+		}
+		return res.status(200).json(req.user.receivers);
+	} else {
+		res.status(400).json({ message: "Không có thông tin người dùng" });
+	}
+});
+
 router.post("/one-receiver-list", async (req, res) => {
 	// {
 	// 	"accountNumber": "00000003",
 	//     "_id": "5ee2430bc2b4724218e7d1ea"
 	// }
-	const { _id } = req.user;
+	const { user } = req.body;
 	const { accountNumber } = req.body;
 	try {
-		const user = await usersModel.findOne({ _id });
-		const recs = user.receivers;
+		const receiverList = user.receivers;
 		if (user) {
 			let flag = 0;
-			recs.forEach((rec) => {
+			receiverList.forEach((rec) => {
 				if (rec.accountNumber == accountNumber) {
 					flag = 1;
 					return res.status(200).json({ data: rec });
@@ -137,68 +149,6 @@ router.post("/one-receiver-list", async (req, res) => {
 	}
 });
 
-//---Update user
-router.patch("/", async (req, res) => {
-	// {
-	// 	"balance": 50000,
-	//     "permission": true,
-	//     "receivers": [],
-	//     "_id": "5ee222fc372b270017d284c3",
-	//     "accountNumber": "000004",
-	//     "username": "thuyloan",
-	//     "name": "Nguyễn Thúy Loan",
-	//     "email": "thuyloan@gmail.com",
-	//     "phone": "09112345534",
-	//     "passwordHash": "$2a$10$Qg2oDhpV8UJSKURez/ldHOVloYjWR.bo0.DrJERgsKnVefdlTOHwC",
-	// }
-	const {
-		_id,
-		balance,
-		permission,
-		accountNumber,
-		username,
-		name,
-		email,
-		phone,
-	} = req.body;
-	if (!_id) {
-		return res.status(400).json({ message: "Id không được rỗng" });
-	}
-
-	try {
-		const user = await usersModel.findOne({ _id });
-		if (user) {
-			const result = await usersModel.findOneAndUpdate(
-				{ _id },
-				{
-					balance: balance || user.balance,
-					permission: permission || user.permission,
-					accountNumber: accountNumber || user.accountNumber,
-					username: username || user.username,
-					name: name || user.name,
-					email: email || user.email,
-					phone: phone || user.phone,
-				}
-			);
-			if (result) {
-				const data = await usersModel.findOne({ _id: result._id });
-				if (data) {
-					return res
-						.status(200)
-						.json({ message: "Cập nhật thành công.", data });
-				}
-			}
-		} else {
-			return res
-				.status(400)
-				.json({ message: "Không tìm thấy khách hàng này." });
-		}
-	} catch (err) {
-		console.log("err: ", err);
-		return res.status(500).json({ message: "Đã có lỗi xảy ra." });
-	}
-});
-
 router.patch("/receiver-list", async (req, res) => {
 	// {
 	// 	"receiver": {
@@ -208,14 +158,10 @@ router.patch("/receiver-list", async (req, res) => {
 	// 	},
 	//     "_id": "5ee24345c2b4724218e7d1ec"
 	// }
-	const { _id, receiver } = req.body;
-	if (!_id) {
-		return res.status(400).json({ message: "Id không được rỗng" });
-	}
+	const { user } = req;
+	const { receiver } = req.body;
 
 	try {
-		const user = await usersModel.findOne({ _id });
-
 		if (user) {
 			let newReceivers = user.receivers;
 			// console.log(user)
@@ -314,7 +260,11 @@ router.get("/:id", async (req, res) => {
 		});
 
 	if (findingUser.length > 0) {
-		return res.json(findingUser);
+		const result = {
+			accountNumber: findingUser[0].accountNumber,
+			name: findingUser[0].name,
+		};
+		return res.json(result);
 	}
 	return res.json({
 		error: "Không có dữ liệu nào của người dùng!",
