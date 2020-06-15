@@ -2,111 +2,141 @@ const express = require("express");
 const router = express.Router();
 
 const UserReceiverModel = require("../models/userReceiver");
+const usersModel = require("../models/users.model");
+const bankModel = require("../models/bank.model");
 
-router.get("/", async (req, res) => {
-	const allUserReceiver = await UserReceiverModel
-		.find()
-		.then((data) => data)
-		.catch((err) => {
-			throw new Error(err);
-		});
-
-	allUserReceiver.length !== 0
-		? res.json(allUserReceiver)
-		: res.json({ message: "Không userReceiver" });
-});
-
-router.get("/:id", async (req, res) => {
-	const id = req.params.id;
-	const userReceiver = await UserReceiverModel
-		.find({_id:id})
-		.then((data) => data)
-		.catch((err) => {
-			throw new Error(err);
-		});
-
-		userReceiver.length !== 0
-		? res.json(userReceiver)
-		: res.json({ message: "Không tìm thấy userReceiver này" });
-});
-
-// Thêm một receiver
-router.post("/", (req, res) => {
-	// {
-	// 	"accountNumber": "String",
-	// 	"bankId": "String",
-	// 	"savedName": "String",
-	// }
-
-	const allUserReceiver = new UserReceiverModel(req.body);
-	allUserReceiver
-		.save()
-		.then((data) => {
-			return res.json(data);
-		})
-		.catch((err) => {
-			throw new Error(err);
-		});
-});
-
-router.patch("/", async (req, res) => {
-	// {
-	// 	"accountNumber": "String",
-	// 	"bankId": "String",
-	// 	"savedName": "String",
-	// }
-	const { _id, savedName} = req.body
-	if (!_id) {
-		return res.status(400).json({ message: "Id không được rỗng" })
-	}
-
-	if ( !savedName) {
-		return res.status(400).json({ message: "Các trường không được trống" })
-	}
-
+//GET receiver list
+router.get("/all-receiver-list", async (req, res) => {
 	try {
-		const allUserReceiver = await UserReceiverModel.findOne({ _id })
-		if (allUserReceiver) {
-			const result = await UserReceiverModel.findOneAndUpdate({ _id }, { savedName: savedName || allUserReceiver.savedName
-																				 })
-			if (result) {
-				const data = await UserReceiverModel.findOne({ _id: result._id })
-				if (data) {
-					return res.status(200).json({ message: "Cập nhật thành công.", data })
+		const user = req.user;
+		if (user) {
+			recs = user.receivers;
+			for(i=0;i< recs.length;i++)
+			{
+				if(recs[i].bankId == 0)
+				{
+					recs[i].bankName = "Nội bộ"
+				}
+				else{
+					bank = await bankModel.findOne({bankId: 1 })
+
+					console.log(bank)
+					recs[i].bankName = bank.name;
 				}
 			}
+			return res.status(200).json({ data: user.receivers });
+		} else {
+			return res
+				.status(400)
+				.json({ message: "Khách hàng chưa đăng nhập." });
 		}
-		else {
-			return res.status(400).json({ message: "Không tìm thấy receiver." })
-		}
-	}
-	catch (err) {
-		console.log('err: ', err)
-		return res.status(500).json({ message: "Đã có lỗi xảy ra." })
+	} catch (err) {
+		console.log("err: ", err);
+		return res.status(500).json({ message: "Đã có lỗi xảy ra." });
 	}
 });
 
-router.delete("/", async (req, res) => {
-	const { _id, savedName} = req.body
-	if (!_id) {
-		return res.status(400).json({ message: "Id không được rỗng" })
+router.post("/one-receiver-list", async (req, res) => {
+	// {
+	// 	"accountNumber": "00000003",
+	//     "_id": "5ee2430bc2b4724218e7d1ea"
+	// }
+	const { _id} = req.user;
+	const { accountNumber } = req.body;
+	try {
+		const user = await usersModel.findOne({ _id });
+		const recs = user.receivers;
+		if (user) {
+			let flag = 0;
+			recs.forEach((rec) => {
+				if (rec.accountNumber == accountNumber) {
+					flag = 1;
+					return res.status(200).json({ data: rec });
+				}
+			});
+			if (flag == 0) {
+				return res
+					.status(400)
+					.json({ message: "Không tìm thấy receiver này." });
+			}
+		} else {
+			return res
+				.status(400)
+				.json({ message: "Không tìm thấy khách hàng này." });
+		}
+	} catch (err) {
+		console.log("err: ", err);
+		return res.status(500).json({ message: "Đã có lỗi xảy ra." });
 	}
+});
 
-	    try {
-        const result = await UserReceiverModel.findOneAndDelete({ _id })
-        if (result) {
-            return res.status(200).json({ message: "Xóa receiver thành công.", data: result })
-        }
-        else {
-            return res.status(400).json({ message: "Không tìm thấy receiver." })
-        }
-    }
-    catch (err) {
-        console.log('err: ', err)
-        return res.status(500).json({ message: "Đã có lỗi xảy ra." })
-    }
+//ADD receiver
+router.post("/receiver-list", async (req, res) => {
+	// {
+	// 	"receiver": {
+	// 		"accountNumber": "5edb5f2d9bd2c03f1c410814",
+	// 		"bankId": 0,
+	// 		"savedName": "Thuong"
+	// 		"realName": "RealName"
+	// 	},
 
+	const { receiver } = req.body
+	console.log(receiver)
+	try {
+		const user = req.user;
+		if (user) {
+			let newReceivers = user.receivers;
+			// console.log(user)
+			console.log(newReceivers)
+			let flag = 0;
+			newReceivers.forEach((rec) => {
+				if (
+					rec.accountNumber === receiver.accountNumber ||
+					rec.savedname === receiver.savedName ||
+					rec.realName === receiver.realName
+				) {
+					flag = 1;
+					// if(rec.realName === receiver.realName)
+					
+				}
+			});
 
+			console.log(flag)
+
+			if (flag == 0) {
+				console.log("sai")
+				newReceivers.push(receiver);
+				const result = await usersModel.findOneAndUpdate(
+					{ _id: user._id },
+					{
+						receivers: newReceivers || user.receivers,
+					}
+				);
+				if (result) {
+					const data = await usersModel.findOne({ _id: result._id });
+					if (data) {
+						return res
+							.status(200)
+							.json({ message: "Cập nhật thành công.", data });
+					}
+				}
+			}
+			else
+			{
+				return res
+						.status(400)
+						.json({ message: "Trùng tài khoản hoặc tên lưu trữ" });
+			}
+			// return res.status(400).json({ message: "TEST" })
+		} else {
+			return res
+				.status(400)
+				.json({ message: "Không tìm thấy khách hàng này." });
+		}
+	} catch (err) {
+		console.log("err: ", err);
+		return res.status(500).json({ message: "Đã có lỗi xảy ra." });
+	}
 });
 
 

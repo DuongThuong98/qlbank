@@ -5,7 +5,7 @@
 	},
 	"auth": {
 		"secret": "secretKey",
-		"expiresIn": "10m",
+		"expiresIn": "100m",
 		"refreshTokenSz": 80
 	}
 }
