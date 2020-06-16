@@ -8,7 +8,7 @@ const { request } = require("express");
 const KeyGenCode = "key-gen-otp-code";
 const VerifyCodeModel = require("../models/verifyCode");
 const router = express.Router();
-
+const minutesExpired = 5;
 // --- Login ---
 router.post("/login", (req, res) => {
   passport.authenticate("local", { session: false }, (error, user, info) => {
@@ -127,8 +127,10 @@ router.post("/verify-forgot-password", async (req, res) => {
   //   }
 
   var verify = VerifyCodeModel.find({ email: email, code: code });
-  if (verify == null || verify.type != 0) {
-    res.status(401).json({ message: "Code is invalid or expried!" });
+
+  var minutes = (new Date().getTime() - verify.expiredDate.getTime()) / 60000;
+  if (verify == null || verify.type != 0 || minutes > minutesExpired) {
+    res.status(401).json({ message: "Code is invalid or expired!" });
   } else {
     newPasswordHash = bcrypt.hashSync(newPassword, 10);
     const result = await usersModel.findOneAndUpdate(
