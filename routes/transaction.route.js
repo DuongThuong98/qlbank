@@ -29,6 +29,8 @@ router.post("/", (req, res) => {
 	// 	"content": "Thông tin trả nợ",
 	// 	"signature": "Chữ kỹ ở này",
 	// }
+	///Chưa chắc gì người nạp là USER hiện tại nên cần truyền lên ID người gừi
+	// 
 	const allUserTrans = new TransactionModel(req.body);
 	allUserTrans
 		.save()
