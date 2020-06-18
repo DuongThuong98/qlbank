@@ -3,17 +3,67 @@ const router = express.Router();
 
 const DebtNotificationModel = require("../models//debtNotification.model");
 
+
+//GET 
 router.get("/", async (req, res) => {
-	const allUserTrans = await DebtNotificationModel
+	const debt = await DebtNotificationModel
 		.find()
 		.then((data) => data)
 		.catch((err) => {
 			throw new Error(err);
 		});
 
-	allUserTrans.length !== 0
+	debt.length !== 0
 		? res.json(allUserReceiver)
-		: res.json({ message: "Không cp1 nhắc nợ nào" });
+		: res.json({ message: "Không có nhắc nợ nào" });
+});
+
+router.get("/have-not-paid-debt", async (req, res) => {
+	const user = req.user;
+
+	const debt = await DebtNotificationModel
+		.find({ $and : [
+			{ $or : [ { sentUserId: user._id }, {receivedUserId: user._id} ] },
+			{ status : 0 }
+		] })
+		.then((data) => data)
+		.catch((err) => {
+			throw new Error(err);
+		});
+
+	debt.length !== 0
+		? res.json(debt)
+		: res.json({ message: "Không có nhắc nợ nào" });
+});
+
+router.get("/debting", async (req, res) => {
+	const user = req.user;
+
+	const debt = await DebtNotificationModel
+		.find({sentUserId: user._id})
+		.then((data) => data)
+		.catch((err) => {
+			throw new Error(err);
+		});
+
+	debt.length !== 0
+		? res.json(debt)
+		: res.json({ message: "Không có nhắc nợ nào" });
+});
+
+router.get("/debted", async (req, res) => {
+	const user = req.user;
+
+	const debt = await DebtNotificationModel
+		.find({receivedUserId: user._id})
+		.then((data) => data)
+		.catch((err) => {
+			throw new Error(err);
+		});
+
+	debt.length !== 0
+		? res.json(debt)
+		: res.json({ message: "Không có nhắc nợ nào" });
 });
 
 // Thêm một Giao dịch

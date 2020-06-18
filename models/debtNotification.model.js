@@ -2,18 +2,38 @@ const mongoose = require("mongoose");
 
 const DebtNotificationSchema = mongoose.Schema(
 	{
-		sentUserId: String,
+		sentUserId: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Users",
+		},
 		sentBankId: String,
-		receivedUserId: String,
+		receivedUserId: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Users",
+		},
 		receivedBankId: String,
-		updatedBySentUser: Number, // default là -1, nếu người nhắc xoá thì là 1, nếu người nợ xoá/trả nợ thì là 0. Dùng để gửi feedbackContent cho người nhắc hoặc người nợ
-		status: Number, // paid, delete, pending... (1,2,3,4)
+		updatedBySentUser: {
+			type: Number,
+			default: 0
+		}, // default là 0, nếu người nhắc xoá thì là 1, nếu người nợ xoá thì là 2, trả nợ là 3.
+		// Dùng để gửi feedbackContent cho người nhắc hoặc người nợ
+		status: {
+			type: Number,
+			default: 0
+		}, // paid, delete, pending... (1,-1,0)
 		amount: Number, // 500000
-		debtContent: String, // "Trả tiền ăn cơm hôm qua đi chứ!"
-		feedbackContent: String, // "Okay nha" / "Ủa hôm đó trả rồi mà ta?"
+		debtContent: {
+			type: String,
+			default: ""
+		}, // "Trả tiền ăn cơm hôm qua đi chứ!"
+		feedbackContent: {
+			type: String,
+			default: ""
+		} // "Okay nha" / "Ủa hôm đó trả rồi mà ta?"
 	},
 	{ timestamps: true }
 );
+
 
 const DebtNotification = mongoose.model(
 	"DebtNotification",
@@ -21,3 +41,8 @@ const DebtNotification = mongoose.model(
 );
 
 module.exports = DebtNotification;
+
+// {
+// 	type: mongoose.Schema.Types.ObjectId,
+// 	ref: "Users",
+// },
