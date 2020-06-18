@@ -19,4 +19,5 @@ const DebtNotification = mongoose.model(
 	"DebtNotification",
 	DebtNotificationSchema
 );
+
 module.exports = DebtNotification;

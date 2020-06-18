@@ -1,10 +1,10 @@
 const express = require("express");
 const router = express.Router();
 
-const TransactionModel = require("../models/transaction.model");
+const DebtNotificationModel = require("../models//debtNotification.model");
 
 router.get("/", async (req, res) => {
-	const allUserTrans = await TransactionModel
+	const allUserTrans = await DebtNotificationModel
 		.find()
 		.then((data) => data)
 		.catch((err) => {
@@ -13,24 +13,27 @@ router.get("/", async (req, res) => {
 
 	allUserTrans.length !== 0
 		? res.json(allUserReceiver)
-		: res.json({ message: "Không giao dịch nào" });
+		: res.json({ message: "Không cp1 nhắc nợ nào" });
 });
 
 // Thêm một Giao dịch
 router.post("/", (req, res) => {
 	// {
-	// 	"sentUserId": "Number",
-	// 	"sentBankId": "Number",
-	// 	"receivedUserId": "Number",
-	// 	"receivedBankId": "Number",
-	// 	"isDebt": false, // Có phải trả nợ không?
-	// 	"isReceiverPaid": true, // Người nhận trả phí giao dịch? => True: người nhận trả, false: người gửi trả.
-	// 	"amount": 10000,
-	// 	"content": "Thông tin trả nợ",
-	// 	"signature": "Chữ kỹ ở này",
+	// 	"sentUserId": "String",
+	// 	"sentBankId": "String",
+	// 	"receivedUserId": "String",
+	// 	"receivedBankId": "String",
+	// 	"updatedBySentUser": Number, // default là -1, nếu người nhắc xoá thì là 1, 
+	//nếu người nợ xoá/trả nợ thì là 0.
+	// Dùng để gửi feedbackContent cho người nhắc hoặc người nợ
+	// 	"status": Number, // paid, delete, pending... (1,2,3,4)
+	// 	"amount": Number, // 500000
+	// 	"debtContent": "String", // "Trả tiền ăn cơm hôm qua đi chứ!"
+	// 	"feedbackContent": "String" // "Okay nha" / "Ủa hôm đó trả rồi mà ta?"
 	// }
-	const allUserTrans = new TransactionModel(req.body);
-	allUserTrans
+	
+	const newDebt = new DebtNotificationModel(req.body);
+	newDebt
 		.save()
 		.then((data) => {
 			return res.json(data);
@@ -54,14 +57,14 @@ router.patch("/", async (req, res) => {
 	}
 
 	try {
-		const allUserTrans = await TransactionModel.findOne({ _id })
+		const allUserTrans = await DebtNotificationModel.findOne({ _id })
 		if (allUserTrans) {
-			const result = await TransactionModel.findOneAndUpdate({ _id }, {
+			const result = await DebtNotificationModel.findOneAndUpdate({ _id }, {
 				content: content || allUserTrans.content,
 				isDebt: isDebt || allUserTrans.isDebt
 			})
 			if (result) {
-				const data = await TransactionModel.findOne({ _id: result._id })
+				const data = await DebtNotificationModel.findOne({ _id: result._id })
 				if (data) {
 					return res.status(200).json({ message: "Cập nhật thành công.", data })
 				}
@@ -84,7 +87,7 @@ router.delete("/", async (req, res) => {
 	}
 
 	try {
-		const result = await TransactionModel.findOneAndDelete({ _id })
+		const result = await DebtNotificationModel.findOneAndDelete({ _id })
 		if (result) {
 			return res.status(200).json({ message: "Xóa giao dịch thành công.", data: result })
 		}
