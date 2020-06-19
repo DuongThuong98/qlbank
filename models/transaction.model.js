@@ -30,6 +30,7 @@ const TransactionSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    transactionIdCode: string,
   },
   {
     timestamps: true,

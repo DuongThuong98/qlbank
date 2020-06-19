@@ -2,9 +2,15 @@ const express = require("express");
 const router = express.Router();
 const { totp } = require("otplib");
 const nodemailer = require("nodemailer");
+const  md5 = require('md5');
 
 const TransactionModel = require("../models/transaction.model");
+const UserModel = require("../models/users.model");
+const { message } = require("openpgp");
+
 const keyOTP = "#@vevyveryOTPsecretkey@#";
+const fees = 10000;
+const defaultOverBalance = 50000;
 
 router.get("/", async (req, res) => {
   const allUserTrans = await TransactionModel.find()
@@ -58,6 +64,8 @@ router.post("/", (req, res) => {
     signature: signature,
   }();
 
+  if(amount < defaultOverBalance) return res.status(400).json({message:"Amount is invalid.Please over " + defaultOverBalance});
+
   TransactionModel.create(model, function (err, tran) {
     if (err) {
       return res.status(500).json({ message: err });
@@ -66,6 +74,9 @@ router.post("/", (req, res) => {
       totp.options = { step: 300, digits: 8 };
       var key = keyOTP + currentUser.id;
       const code = totp.generate(key);
+
+      tran.tracsactionIdCode = md5(tran._id + code);
+      await tran.save();
 
       //send mail
       var transporter = nodemailer.createTransport({
@@ -107,6 +118,137 @@ router.post("/", (req, res) => {
       });
     }
   });
+});
+
+router.post("transaction/verify-code", async (req, res )=>{
+const {code} = req.body.code;
+const currentUser = req.user;
+const isValid = totp.check(code, keyOTP + currentUser.id);
+if(!isValid) return res.status(400).json({message: "Invalid code"});
+
+var tran;
+var trans = await TransactionModel.find({code: code});
+trans.forEach(x =>{
+  if(md5(x._id+code) === x.tracsactionIdCode){
+    tran =x;
+  }
+})
+if(tran != null ) return res.status(400).json({message: "Invalid code"});
+
+var receiverUser = await UserModel.findById(tran._id);
+if(receiverUser == null) return res.status(404).json({message: "Receiver not found"});
+
+if(currentUser.balance - tran.amount <= defaultOverBalance){
+  return res.status(400).json({message: "Not enought money"});
+}
+
+//kiem tra nguoi  gui co du tien gui hay khong ||
+if(tran.isReceiverPaid){
+  receiverUser.balance = receiverUser.balance + tran.amount - fees;
+  await receiverUser.save();
+
+  currentUser.balance = currentUser.balance - tran.amount;
+  await currentUser.save();
+}else{
+  //kiem tra xem so du sua khi chuyen co lon hon 50000 ko?
+  if(currentUser.balance - tran.amount - fees <= defaultOverBalance){
+    return res.status(400).json({message: "Not enought money"});
+  }
+  receiverUser.balance = receiverUser.balance + tran.amount;
+  await receiverUser.save();
+
+  currentUser.balance = currentUser.balance - tran.amount-fees;
+  await currentUser.save();
+}
+
+var messageNotify;
+if(isDebt){
+  messageNotify = "Pay"
+}else{
+messageNotify = "Transfer"
+}
+
+//Notification to user(include reciever and sender)
+// send mail, the later version with use realtime
+
+//send to sender
+var transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
+  auth: {
+    user: "mail to send ",
+    pass: "pass",
+  },
+  tls: {
+    rejectUnauthorized: false,
+  },
+});
+
+var content = "";
+content += `<div>
+  <h2>You have been sent ${tran.amount} to ${receiverUser.username}</h2>
+  <h1>Reason: ${message}</h1>
+  <p>Your balance: ${currentUser.balance}</p>
+  </div>  
+`;
+
+var mailOptions = {
+  from: `huuthoigialai@gmail.com`,
+  to: currentUser.email,
+  subject: "Gửi Mã OTP",
+  html: content,
+};
+
+transporter.sendMail(mailOptions, function (error, info) {
+  if (error) {
+    console.log(error);
+    return res.status(400).json({ succes: false });
+  } else {
+    console.log("Email sent: " + info.response);
+    return res.json({ succes: true });
+  }
+});
+
+//send to reciever
+var transporter2 = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
+  auth: {
+    user: "mail to send ",
+    pass: "pass",
+  },
+  tls: {
+    rejectUnauthorized: false,
+  },
+});
+
+var content2 = "";
+content2 += `<div>
+  <h2>You have been received ${tran.amount} from ${currentUser.username}</h2>
+  <h1>Reason: ${message}</h1>
+  <p>Your balance: ${receiverUser.balance}</p>
+  </div>  
+`;
+
+var mailOptions2 = {
+  from: `huuthoigialai@gmail.com`,
+  to: currentUser.email,
+  subject: "Gửi Mã OTP",
+  html: content,
+};
+
+transporter2.sendMail(mailOptions2, function (error, info) {
+  if (error) {
+    console.log(error);
+    return res.status(400).json({ succes: false });
+  } else {
+    console.log("Email sent: " + info.response);
+    return res.json({ succes: true });
+  }
+});
+
 });
 
 //should the transaction be updated?
