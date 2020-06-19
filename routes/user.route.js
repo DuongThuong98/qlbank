@@ -24,16 +24,33 @@ router.post("/", async (req, res) => {
 	let isValidEmail = validator.validate(req.body.email);
 	if (!isValidEmail) res.status(400).send("Email không hợp lệ!");
 
-	usersModel.findOne({ email: req.body.email }).exec((err, user) => {
-		if (user) return res.status(400).send({ message: "Email is exist!" });
+	var findUser = await usersModel.findOne({
+		accountNumber: req.body.accountNumber,
 	});
+	if (findUser) {
+		return res.status(400).send({ message: "Account number is exist!" });
+	}
+
+	var findUser2 = await usersModel.findOne({
+		email: req.body.email,
+	});
+	if (findUser2) {
+		return res.status(400).send({ message: "Email number is exist!" });
+	}
+
+	var findUser3 = await usersModel.findOne({
+		username: req.body.username,
+	});
+	if (findUser3) {
+		return res.status(400).send({ message: "Username is exist!" });
+	}
 
 	const user = new usersModel(req.body);
 	user.setPasswordHash(req.body.password);
 	user
 		.save()
 		.then((userData) => {
-			res.status(200).send({ user: userData });
+			res.status(200).send({ message: "Create new customer successfully!" });
 		})
 		.catch((err) => {
 			console.log("error: ", err.message);
