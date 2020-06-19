@@ -6,7 +6,6 @@ const bcrypt = require("bcryptjs");
 
 const { totp } = require("otplib");
 const nodemailer = require("nodemailer");
-const KeyGenCode = "key-gen-otp-code";
 
 const router = express.Router();
 
@@ -53,14 +52,14 @@ router.post("/forgot-password", async (req, res) => {
 			}
 
 			totp.options = { step: 300 };
-			const code = totp.generate(KeyGenCode);
+			const code = totp.generate(email);
 			var transporter = nodemailer.createTransport({
 				host: "smtp.gmail.com",
 				port: 465,
 				secure: true,
 				auth: {
-					user: "khactrieuhcmus@gmail.com",
-					pass: "khactrieuserver",
+					user: "mail to send ",
+					pass: "pass",
 				},
 				tls: {
 					rejectUnauthorized: false,
@@ -69,7 +68,7 @@ router.post("/forgot-password", async (req, res) => {
 
 			var content = "";
 			content += `<div>
-        		<h2>Use the code below to reset password!</h2>
+        <h2>Use the code below to reset password!</h2>
 				<h1> ${code}</h1>
 				<p>This code will be expired after 5 minutes!</p>
 				</div>`;
@@ -100,7 +99,7 @@ router.post("/verify-forgot-password", async (req, res) => {
 		if (!user) return res.status(404).send({ message: "User Not found." });
 	});
 
-	const isValid = totp.check(code, KeyGenCode);
+	const isValid = totp.check(code, email);
 	if (isValid) {
 		newPasswordHash = bcrypt.hashSync(newPassword, 10);
 		const result = await usersModel.findOneAndUpdate(
@@ -113,7 +112,7 @@ router.post("/verify-forgot-password", async (req, res) => {
 			res.status(401).json({ message: "Authentication error!" });
 		}
 	} else {
-		res.status(401).json({ message: "Code is invalid or expried!" });
+		res.status(401).json({ message: "Code is invalid or expired!" });
 	}
 });
 
