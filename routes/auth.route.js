@@ -58,8 +58,8 @@ router.post("/forgot-password", async (req, res) => {
 				port: 465,
 				secure: true,
 				auth: {
-					user: "mail to send ",
-					pass: "pass",
+					user: "khactrieuhcmus@gmail.com",
+					pass: "khactrieuserver",
 				},
 				tls: {
 					rejectUnauthorized: false,
