@@ -60,8 +60,11 @@ app.use(
 app.use("/api/user-receiver",
 	passport.authenticate("jwt", { session: false }),
 	require("./routes/userReceiver.route"))
-;
+	;
 app.use("/api/transaction", require("./routes/transaction.route"));
+app.use("/api/debtNoti",
+	passport.authenticate("jwt", { session: false }),
+	require("./routes/debtNotification.route"));
 
 app.use((req, res, next) => {
 	res.status(404).send("NOT FOUND");

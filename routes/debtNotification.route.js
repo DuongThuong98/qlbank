@@ -20,7 +20,6 @@ router.get("/", async (req, res) => {
 
 router.get("/have-not-paid-debt", async (req, res) => {
 	const user = req.user;
-
 	const debt = await DebtNotificationModel
 		.find({ $and : [
 			{ $or : [ { sentUserId: user._id }, {receivedUserId: user._id} ] },
@@ -34,6 +33,7 @@ router.get("/have-not-paid-debt", async (req, res) => {
 	debt.length !== 0
 		? res.json(debt)
 		: res.json({ message: "Không có nhắc nợ nào" });
+
 });
 
 router.get("/debting", async (req, res) => {
@@ -81,6 +81,8 @@ router.post("/", (req, res) => {
 	// 	"debtContent": "String", // "Trả tiền ăn cơm hôm qua đi chứ!"
 	// 	"feedbackContent": "String" // "Okay nha" / "Ủa hôm đó trả rồi mà ta?"
 	// }
+	entity = req.body;
+	
 	
 	const newDebt = new DebtNotificationModel(req.body);
 	newDebt
