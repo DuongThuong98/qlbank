@@ -130,8 +130,14 @@ router.post("/", (req, res) => {
 
 router.post("/verify-code", async (req, res) => {
 	const { code } = req.body;
-	const currentUser = req.user;
-	const transactionId = req.header["transactionId"];
+	const currentUserId = req.user._id;
+
+	var currentUser = await UserModel.findOne({
+		_id: currentUserId,
+	});
+
+	const transactionId = req.get("transactionId");
+	console.log(req.get("transactionId"));
 
 	if (transactionId == null) {
 		return res.status(400).json({ message: "Invalid transactionId!" });
@@ -139,11 +145,16 @@ router.post("/verify-code", async (req, res) => {
 	const isValid = totp.check(code, keyOTP + currentUser._id);
 	if (!isValid) return res.status(400).json({ message: "Invalid code!" });
 
-	var tran = await TransactionModel.findById({ _id: transactionId });
-	if (tran != null)
+	const tran = await TransactionModel.findById({ _id: transactionId });
+
+	console.log(tran);
+
+	if (tran == null)
 		return res.status(404).json({ message: "Not found transaction!" });
 
-	var receiverUser = await UserModel.findById(tran._id);
+	var receiverUser = await UserModel.findOne({
+		accountNumber: tran.receivedUserId,
+	});
 	if (receiverUser == null)
 		return res.status(404).json({ message: "Receiver not found" });
 
@@ -171,10 +182,10 @@ router.post("/verify-code", async (req, res) => {
 	}
 
 	var messageNotify;
-	if (isDebt) {
-		messageNotify = "Pay";
+	if (tran.isDebt) {
+		messageNotify = "Trả nợ";
 	} else {
-		messageNotify = "Transfer";
+		messageNotify = "Chuyển tiền";
 	}
 
 	//Notification to user(include receiver and sender)
@@ -186,8 +197,8 @@ router.post("/verify-code", async (req, res) => {
 		port: 465,
 		secure: true,
 		auth: {
-			user: "mail to send ",
-			pass: "pass",
+			user: "khactrieuhcmus@gmail.com",
+			pass: "khactrieuserver",
 		},
 		tls: {
 			rejectUnauthorized: false,
@@ -197,7 +208,8 @@ router.post("/verify-code", async (req, res) => {
 	var content = "";
 	content += `<div>
   <h2>You have been sent ${tran.amount} to ${receiverUser.username}</h2>
-  <h1>Reason: ${message}</h1>
+  <h1>Type: ${messageNotify}</h1>
+  <p>Reason: ${tran.content}</p>
   <p>Your balance: ${currentUser.balance}</p>
   </div>  
 `;
@@ -225,8 +237,8 @@ router.post("/verify-code", async (req, res) => {
 		port: 465,
 		secure: true,
 		auth: {
-			user: "mail to send ",
-			pass: "pass",
+			user: "khactrieuhcmus@gmail.com",
+			pass: "khactrieuserver",
 		},
 		tls: {
 			rejectUnauthorized: false,
