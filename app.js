@@ -62,7 +62,7 @@ app.use("/api/user-receiver",
 	require("./routes/userReceiver.route"))
 	;
 app.use("/api/transaction", require("./routes/transaction.route"));
-app.use("/api/debtNoti",
+app.use("/api/debt",
 	passport.authenticate("jwt", { session: false }),
 	require("./routes/debtNotification.route"));
 

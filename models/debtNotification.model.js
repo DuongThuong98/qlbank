@@ -6,12 +6,18 @@ const DebtNotificationSchema = mongoose.Schema(
 			type: mongoose.Schema.Types.ObjectId,
 			ref: "Users",
 		},
-		sentBankId: String,
+		sentBankId: {
+			type: Number,
+			default: 0
+		},
 		receivedUserId: {
 			type: mongoose.Schema.Types.ObjectId,
 			ref: "Users",
 		},
-		receivedBankId: String,
+		receivedBankId: {
+			type: Number,
+			default: 0
+		},
 		updatedBySentUser: {
 			type: Number,
 			default: 0

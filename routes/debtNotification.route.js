@@ -14,7 +14,7 @@ router.get("/", async (req, res) => {
 		});
 
 	debt.length !== 0
-		? res.json(allUserReceiver)
+		? res.json(debt)
 		: res.json({ message: "Không có nhắc nợ nào" });
 });
 
@@ -70,21 +70,24 @@ router.get("/debted", async (req, res) => {
 router.post("/", (req, res) => {
 	// {
 	// 	"sentUserId": "String",
-	// 	"sentBankId": "String",
+	// 	"sentBankId": 0,
 	// 	"receivedUserId": "String",
-	// 	"receivedBankId": "String",
+	// 	"receivedBankId": 0,
 	// 	"updatedBySentUser": Number, // default là -1, nếu người nhắc xoá thì là 1, 
-	//nếu người nợ xoá/trả nợ thì là 0.
+	// nếu người nợ xoá/trả nợ thì là 0.
 	// Dùng để gửi feedbackContent cho người nhắc hoặc người nợ
 	// 	"status": Number, // paid, delete, pending... (1,2,3,4)
 	// 	"amount": Number, // 500000
 	// 	"debtContent": "String", // "Trả tiền ăn cơm hôm qua đi chứ!"
 	// 	"feedbackContent": "String" // "Okay nha" / "Ủa hôm đó trả rồi mà ta?"
 	// }
+
+	const user = req.user;
 	entity = req.body;
+	entity.sentUserId = user._id;
 	
-	
-	const newDebt = new DebtNotificationModel(req.body);
+	console.log("Entity: ", entity)
+	const newDebt = new DebtNotificationModel(entity);
 	newDebt
 		.save()
 		.then((data) => {
@@ -95,9 +98,8 @@ router.post("/", (req, res) => {
 		});
 });
 
-
-
 router.patch("/", async (req, res) => {
+	//_id này là id của phiếu nhắc nhợ nha
 	const { _id, isDebt, content } = req.body
 	if (!_id) {
 		return res.status(400).json({ message: "Id không được rỗng" })
@@ -109,11 +111,11 @@ router.patch("/", async (req, res) => {
 	}
 
 	try {
-		const allUserTrans = await DebtNotificationModel.findOne({ _id })
-		if (allUserTrans) {
+		const debts = await DebtNotificationModel.findOne({ _id })
+		if (debts) {
 			const result = await DebtNotificationModel.findOneAndUpdate({ _id }, {
-				content: content || allUserTrans.content,
-				isDebt: isDebt || allUserTrans.isDebt
+				content: content || debts.content,
+				isDebt: isDebt || debts.isDebt
 			})
 			if (result) {
 				const data = await DebtNotificationModel.findOne({ _id: result._id })
@@ -133,15 +135,34 @@ router.patch("/", async (req, res) => {
 });
 
 router.delete("/", async (req, res) => {
-	const { _id } = req.body
-	if (!_id) {
-		return res.status(400).json({ message: "Id không được rỗng" })
-	}
 
+	//_id này là id của phiếu nhắc nhợ nha
+	const { _id,  feedbackContent } = req.body;
 	try {
-		const result = await DebtNotificationModel.findOneAndDelete({ _id })
-		if (result) {
-			return res.status(200).json({ message: "Xóa giao dịch thành công.", data: result })
+		const debt = await DebtNotificationModel.findOne({ _id })
+		if (debt) {
+			var updatedBySent = 0;
+			console.log(debt.sentUserId," vs ", req.user._id)
+			if(debt.sentUserId.equals(req.user._id))
+			{
+				updatedBySent = 1;
+			}
+			else
+			{
+				updatedBySent = 2;
+			}
+
+			const result = await DebtNotificationModel.findOneAndUpdate({ _id }, {
+				feedbackContent: feedbackContent || debt.feedbackContent,
+				updatedBySentUser: updatedBySent || debt.updatedBySentUser,
+				status: -1 || debt.status
+			})
+			if (result) {
+				const data = await DebtNotificationModel.findOne({ _id: result._id })
+				if (data) {
+					return res.status(200).json({ message: "Cập nhật thành công.", data })
+				}
+			}
 		}
 		else {
 			return res.status(400).json({ message: "Không tìm thấy giao dịch này." })
@@ -151,8 +172,6 @@ router.delete("/", async (req, res) => {
 		console.log('err: ', err)
 		return res.status(500).json({ message: "Đã có lỗi xảy ra." })
 	}
-
-
 });
 
 ////////
