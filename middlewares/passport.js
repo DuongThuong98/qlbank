@@ -15,15 +15,15 @@ passport.use(
 		(username, password, done) => {
 			UsersModel.findOne({ username: username }, (err, rows) => {
 				if (err) return done(err);
-				if (rows.length === 0) {
+				if (!rows || rows.length === 0) {
 					return done(null, false, {
-						message: "Invalid username!",
+						message: "Invalid username or password!",
 					});
 				} else {
 					bcrypt.compare(password, rows.passwordHash).then((res) => {
 						if (!res) {
 							return done(null, false, {
-								message: "Invalid password!",
+								message: "Invalid username or password!",
 							});
 						}
 						return done(null, rows);

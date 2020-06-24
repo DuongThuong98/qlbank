@@ -5,9 +5,6 @@ const { Validator } = require("node-input-validator");
 var validator = require("email-validator");
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
-const { totp } = require("otplib");
-const nodemailer = require("nodemailer");
-const KeyGenCode = "key-gen-otp-code";
 
 const router = express.Router();
 
@@ -27,16 +24,33 @@ router.post("/", async (req, res) => {
 	let isValidEmail = validator.validate(req.body.email);
 	if (!isValidEmail) res.status(400).send("Email không hợp lệ!");
 
-	usersModel.findOne({ email: req.body.email }).exec((err, user) => {
-		if (user) return res.status(400).send({ message: "Email is exist!" });
+	var findUser = await usersModel.findOne({
+		accountNumber: req.body.accountNumber,
 	});
+	if (findUser) {
+		return res.status(400).send({ message: "Account number is exist!" });
+	}
+
+	var findUser2 = await usersModel.findOne({
+		email: req.body.email,
+	});
+	if (findUser2) {
+		return res.status(400).send({ message: "Email number is exist!" });
+	}
+
+	var findUser3 = await usersModel.findOne({
+		username: req.body.username,
+	});
+	if (findUser3) {
+		return res.status(400).send({ message: "Username is exist!" });
+	}
 
 	const user = new usersModel(req.body);
 	user.setPasswordHash(req.body.password);
 	user
 		.save()
 		.then((userData) => {
-			res.status(200).send({ user: userData });
+			res.status(200).send({ message: "Create new customer successfully!" });
 		})
 		.catch((err) => {
 			console.log("error: ", err.message);
@@ -165,11 +179,10 @@ router.patch("/receiver-list", async (req, res) => {
 				rec.savedName == receiver.savedName
 			) {
 				flag = 1;
-				return res
-					.status(400)
-					.json({ message: "Trùng tài khoản hoặc tên lưu trữ" });
+				res.status(400).json({ message: "Trùng tài khoản hoặc tên lưu trữ" });
 			}
 		});
+		if (flag === 1) return;
 		console.log(receivers);
 
 		receivers.push(receiver);
@@ -259,43 +272,31 @@ router.delete("/receiver-list", async (req, res) => {
 });
 
 router.patch("/change-password", async (req, res) => {
-	const { _id, password, newPassword } = req.body;
-	if (!_id) {
-		return res.status(400).json({ message: "Id không được rỗng" });
-	}
-
-	try {
-		const user = await usersModel.findOne({ _id });
-
-		if (user) {
-			let isTrueOldPass = await bcrypt.compare(password, user.passwordHash);
-			if (isTrueOldPass) {
-				newPasswordHash = bcrypt.hashSync(newPassword, 10);
-				const result = await usersModel.findOneAndUpdate(
-					{ _id },
-					{
-						passwordHash: newPasswordHash || user.passwordHash,
-					}
-				);
-				if (result) {
-					const data = await usersModel.findOne({ _id: result._id });
-					if (data) {
-						return res
-							.status(200)
-							.json({ message: "Cập nhật thành công.", data });
-					}
+	const { user } = req;
+	const { password, newPassword } = req.body;
+	if (user) {
+		let isTrueOldPass = await bcrypt.compare(password, user.passwordHash);
+		if (isTrueOldPass) {
+			newPasswordHash = bcrypt.hashSync(newPassword, 10);
+			const result = await usersModel.findOneAndUpdate(
+				{ accountNumber: user.accountNumber },
+				{
+					passwordHash: newPasswordHash || user.passwordHash,
 				}
-			} else {
-				return res.status(400).json({ message: "Password cũ sai" });
+			);
+			if (result) {
+				const data = await usersModel.findOne({
+					accountNumber: result.accountNumber,
+				});
+				if (data) {
+					return res.status(200).json({ message: "Cập nhật thành công." });
+				}
 			}
 		} else {
-			return res
-				.status(400)
-				.json({ message: "Không tìm thấy khách hàng này." });
+			return res.status(400).json({ message: "Password cũ sai" });
 		}
-	} catch (err) {
-		console.log("err: ", err);
-		return res.status(500).json({ message: "Đã có lỗi xảy ra." });
+	} else {
+		return res.status(400).json({ message: "Không tìm thấy khách hàng này." });
 	}
 });
 
@@ -303,7 +304,7 @@ router.patch("/change-password", async (req, res) => {
 router.get("/:id", async (req, res) => {
 	const id = req.params.id;
 	const findingUser = await usersModel
-		.find({ accountNumber: id })
+		.find({ accountNumber: id, role: "customer" })
 		.then((result) => result)
 		.catch((err) => {
 			throw new Error(err);
