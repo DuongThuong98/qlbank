@@ -1,10 +1,11 @@
 const express = require("express");
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
+const usersModel = require("../models/users.model");
+const bcrypt = require("bcryptjs");
 
 const { totp } = require("otplib");
 const nodemailer = require("nodemailer");
-const KeyGenCode = "key-gen-otp-code";
 
 const router = express.Router();
 
@@ -51,14 +52,14 @@ router.post("/forgot-password", async (req, res) => {
 			}
 
 			totp.options = { step: 300 };
-			const code = totp.generate(KeyGenCode);
+			const code = totp.generate(email);
 			var transporter = nodemailer.createTransport({
 				host: "smtp.gmail.com",
 				port: 465,
 				secure: true,
 				auth: {
-					user: "mail to send ",
-					pass: "pass",
+					user: "khactrieuhcmus@gmail.com",
+					pass: "khactrieuserver",
 				},
 				tls: {
 					rejectUnauthorized: false,
@@ -70,8 +71,7 @@ router.post("/forgot-password", async (req, res) => {
         <h2>Use the code below to reset password!</h2>
 				<h1> ${code}</h1>
 				<p>This code will be expired after 5 minutes!</p>
-				</div>  
-		`;
+				</div>`;
 
 			var mailOptions = {
 				from: `huuthoigialai@gmail.com`,
@@ -83,10 +83,10 @@ router.post("/forgot-password", async (req, res) => {
 			transporter.sendMail(mailOptions, function (error, info) {
 				if (error) {
 					console.log(error);
-					return res.status(400).json({ succes: false });
+					return res.status(400).json({ success: false });
 				} else {
 					console.log("Email sent: " + info.response);
-					return res.json({ succes: true });
+					return res.json({ success: true });
 				}
 			});
 		});
@@ -99,7 +99,7 @@ router.post("/verify-forgot-password", async (req, res) => {
 		if (!user) return res.status(404).send({ message: "User Not found." });
 	});
 
-	const isValid = totp.check(code, KeyGenCode);
+	const isValid = totp.check(code, email);
 	if (isValid) {
 		newPasswordHash = bcrypt.hashSync(newPassword, 10);
 		const result = await usersModel.findOneAndUpdate(
@@ -107,12 +107,12 @@ router.post("/verify-forgot-password", async (req, res) => {
 			{ passwordHash: newPasswordHash }
 		);
 		if (result) {
-			res.json({ succes: true, message: "Reset password success" });
+			res.json({ success: true, message: "Reset password success" });
 		} else {
 			res.status(401).json({ message: "Authentication error!" });
 		}
 	} else {
-		res.status(401).json({ message: "Code is invalid or expried!" });
+		res.status(401).json({ message: "Code is invalid or expired!" });
 	}
 });
 
