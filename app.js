@@ -58,7 +58,12 @@ app.use(
 	require("./routes/bank.route")
 );
 app.use("/api/user-receiver", require("./routes/userReceiver.route"));
-app.use("/api/transaction", require("./routes/transaction.route"));
+
+app.use(
+	"/api/transaction",
+	passport.authenticate("jwt", { session: false }),
+	require("./routes/transaction.route")
+);
 
 app.use((req, res, next) => {
 	res.status(404).send("NOT FOUND");
