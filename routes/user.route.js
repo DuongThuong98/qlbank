@@ -304,7 +304,7 @@ router.patch("/change-password", async (req, res) => {
 router.get("/:id", async (req, res) => {
 	const id = req.params.id;
 	const findingUser = await usersModel
-		.find({ accountNumber: id })
+		.find({ accountNumber: id, role: "customer" })
 		.then((result) => result)
 		.catch((err) => {
 			throw new Error(err);
