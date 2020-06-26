@@ -50,6 +50,7 @@ router.post("/", (req, res) => {
 	console.log(req.body);
 
 	const currentUser = req.user;
+	console.log(req.user);
 
 	//add new transaction
 	const model = {
