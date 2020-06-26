@@ -7,7 +7,7 @@ const TransactionSchema = mongoose.Schema(
 			required: true,
 		},
 		sentBankId: {
-			type: String,
+			type: Number,
 			required: true,
 		},
 		receivedUserId: {
@@ -15,7 +15,7 @@ const TransactionSchema = mongoose.Schema(
 			required: true,
 		},
 		receivedBankId: {
-			type: String,
+			type: Number,
 			required: true,
 		},
 		isDebt: Boolean, // Có phải trả nợ không?
