@@ -105,70 +105,48 @@ router.get("/", async (req, res) => {
 	});
 });
 
-// ----- Get specific user info with his/her id -----
-
-router.get("/:id", async (req, res) => {
-	const id = req.params.id;
-	const findingUser = await usersModel
-		.find({ accountNumber: id })
-		.then((result) => result)
-		.catch((err) => {
-			throw new Error(err);
+router.get("/receiver-list", async (req, res) => {
+	const { user } = req;
+	if (user) {
+		if (user.receivers.length === 0) {
+			const emptyArray = [];
+			return res.status(200).json(emptyArray);
+		}
+		const result = req.user.receivers.map((item, index) => {
+			return {
+				accountNumber: item.accountNumber,
+				savedName: item.savedName,
+				bankId: item.bankId,
+			};
 		});
-
-	if (findingUser.length > 0) {
-		return res.json(findingUser);
+		// console.log(result);
+		return res.status(200).json(result);
+	} else {
+		res.status(400).json({ message: "Không có thông tin người dùng" });
 	}
-	return res.json({
-		error: "Không có dữ liệu nào của người dùng!",
-	});
 });
 
-
-//---Update user
-router.patch("/", async (req, res) => {
+router.post("/one-receiver-list", async (req, res) => {
 	// {
-	// 	"balance": 50000,
-	//     "permission": true,
-	//     "receivers": [],
-	//     "_id": "5ee222fc372b270017d284c3",
-	//     "accountNumber": "000004",
-	//     "username": "thuyloan",
-	//     "name": "Nguyễn Thúy Loan",
-	//     "email": "thuyloan@gmail.com",
-	//     "phone": "09112345534",
-	//     "passwordHash": "$2a$10$Qg2oDhpV8UJSKURez/ldHOVloYjWR.bo0.DrJERgsKnVefdlTOHwC",
+	// 	"accountNumber": "00000003",
+	//     "_id": "5ee2430bc2b4724218e7d1ea"
 	// }
-
-	const { _id} = req.user;
-	const { balance, permission, accountNumber,
-		username, name, email, phone } = req.body
-	if (!_id) {
-		return res.status(400).json({ message: "Id không được rỗng" });
-	}
-
+	const { user } = req.body;
+	const { accountNumber } = req.body;
 	try {
-		const user = await usersModel.findOne({ _id });
+		const receiverList = user.receivers;
 		if (user) {
-			const result = await usersModel.findOneAndUpdate(
-				{ _id },
-				{
-					balance: balance || user.balance,
-					permission: permission || user.permission,
-					accountNumber: accountNumber || user.accountNumber,
-					username: username || user.username,
-					name: name || user.name,
-					email: email || user.email,
-					phone: phone || user.phone,
+			let flag = 0;
+			receiverList.forEach((rec) => {
+				if (rec.accountNumber == accountNumber) {
+					flag = 1;
+					return res.status(200).json({ data: rec });
 				}
-			);
-			if (result) {
-				const data = await usersModel.findOne({ _id: result._id });
-				if (data) {
-					return res
-						.status(200)
-						.json({ message: "Cập nhật thành công.", data });
-				}
+			});
+			if (flag == 0) {
+				return res
+					.status(400)
+					.json({ message: "Không tìm thấy receiver này." });
 			}
 		} else {
 			return res
