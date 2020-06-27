@@ -13,30 +13,55 @@ const keyOTP = "#@vevyveryOTPsecretkey@#";
 const fees = 10000;
 const minimumAmount = 50000;
 
-// router.get("/all-transaction", async (req, res) => {
-//   const allUserTrans = await TransactionModel.find()
-//     .then((data) => data)
-//     .catch((err) => {
-//       throw new Error(err);
-//     });
+router.post("/user-history-transaction-", async (req, res) => {
+  // body info
+  const { accountNumber } = req.body;
 
-//   allUserTrans.length !== 0
-//     ? res.json(allUserReceiver)
-//     : res.json({ message: "Không giao dịch nào" });
-// });
+  //get users
+  const users = UserModel.find()
+    .then((data) => data)
+    .catch((err) => {
+      throw new Error(err);
+    });
 
-// Thêm một Giao dịch
-//input: model 	//	"sentUserId": "Number",
-// 	"sentBankId": "Number",
-// 	"receivedUserId": "Number",
-// 	"receivedBankId": "Number",
-// 	"isDebt": false, // Có phải trả nợ không?
-// 	"isReceiverPaid": true, // Người nhận trả phí giao dịch? => True: người nhận trả, false: người gửi trả.
-// 	"amount": 10000,
-//	isVerified: Boolean
-// 	"content": "Thông tin trả nợ",
-// 	"signature": "Chữ kỹ ở này",
-// }
+  //check user exist?
+  var user = await users.findOne((x) => x.accountNumber === accountNumber);
+  if (user == null) {
+    return res.status(404).json({ message: "Not found user" });
+  }
+
+  //define data to return
+  var data = [];
+  TransactionModel.find({
+    $or: [{ sentUserId: accountNumber }, { receivedUserId: accountNumber }],
+  }).exec(function (err, trans) {
+    if (err) {
+      return res.status(500).json({ message: err });
+    } else {
+      for (let i = 0; i < trans.length; i++) {
+        let us = users.findOne((x) => x.accountNumber === trans[i].sentUserId);
+        let ur = users.findOne(
+          (x) => x.accountNumber === trans[i].receivedUserId
+        );
+        var obj = {
+          sentUserId: trans[i].sentUserId,
+          sentUsername: us != null ? us.name : null,
+          sentBankId: trans[i].sentBankId,
+          receivedUserId: ur != null ? ur.name : null,
+          receivedBankId: trans[i].receivedBankId,
+          isDebt: trans[i].isDebt,
+          isReceiverPaid: trans[i].isReceiverPaid,
+          amount: trans[i].amount,
+          content: trans[i].content,
+        };
+        data.push(obj);
+      }
+    }
+  });
+
+  //return result
+  return res.json({ data: data });
+});
 
 //current user is ADMIN
 router.post("/deposit", async (req, res) => {
