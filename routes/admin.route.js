@@ -13,54 +13,54 @@ const keyOTP = "#@vevyveryOTPsecretkey@#";
 const fees = 10000;
 const minimumAmount = 50000;
 
-router.post("/user-history-transaction-", async (req, res) => {
-  // body info
-  const { accountNumber } = req.body;
+router.post("/user-history-transactions", async (req, res) => {
+	// body info
+	const { accountNumber } = req.body;
 
-  //get users
-  const users = UserModel.find()
-    .then((data) => data)
-    .catch((err) => {
-      throw new Error(err);
-    });
+	//get users
+	const users = UserModel.find()
+		.then((data) => data)
+		.catch((err) => {
+			throw new Error(err);
+		});
 
-  //check user exist?
-  var user = await users.findOne((x) => x.accountNumber === accountNumber);
-  if (user == null) {
-    return res.status(404).json({ message: "Not found user" });
-  }
+	//check user exist?
+	var user = await users.findOne((x) => x.accountNumber === accountNumber);
+	if (user == null) {
+		return res.status(404).json({ message: "Not found user" });
+	}
 
-  //define data to return
-  var data = [];
-  TransactionModel.find({
-    $or: [{ sentUserId: accountNumber }, { receivedUserId: accountNumber }],
-  }).exec(function (err, trans) {
-    if (err) {
-      return res.status(500).json({ message: err });
-    } else {
-      for (let i = 0; i < trans.length; i++) {
-        let us = users.findOne((x) => x.accountNumber === trans[i].sentUserId);
-        let ur = users.findOne(
-          (x) => x.accountNumber === trans[i].receivedUserId
-        );
-        var obj = {
-          sentUserId: trans[i].sentUserId,
-          sentUsername: us != null ? us.name : null,
-          sentBankId: trans[i].sentBankId,
-          receivedUserId: ur != null ? ur.name : null,
-          receivedBankId: trans[i].receivedBankId,
-          isDebt: trans[i].isDebt,
-          isReceiverPaid: trans[i].isReceiverPaid,
-          amount: trans[i].amount,
-          content: trans[i].content,
-        };
-        data.push(obj);
-      }
-    }
-  });
+	//define data to return
+	var data = [];
+	TransactionModel.find({
+		$or: [{ sentUserId: accountNumber }, { receivedUserId: accountNumber }],
+	}).exec(function (err, trans) {
+		if (err) {
+			return res.status(500).json({ message: err });
+		} else {
+			for (let i = 0; i < trans.length; i++) {
+				let us = users.findOne((x) => x.accountNumber === trans[i].sentUserId);
+				let ur = users.findOne(
+					(x) => x.accountNumber === trans[i].receivedUserId
+				);
+				var obj = {
+					sentUserId: trans[i].sentUserId,
+					sentUsername: us != null ? us.name : null,
+					sentBankId: trans[i].sentBankId,
+					receivedUserId: ur != null ? ur.name : null,
+					receivedBankId: trans[i].receivedBankId,
+					isDebt: trans[i].isDebt,
+					isReceiverPaid: trans[i].isReceiverPaid,
+					amount: trans[i].amount,
+					content: trans[i].content,
+				};
+				data.push(obj);
+			}
+		}
+	});
 
-  //return result
-  return res.json({ data: data });
+	//return result
+	return res.json({ data: data });
 });
 
 //current user is ADMIN
