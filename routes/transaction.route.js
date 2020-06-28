@@ -13,6 +13,72 @@ const keyOTP = "#@vevyveryOTPsecretkey@#";
 const fees = 10000;
 const minimumAmount = 50000;
 
+router.get("/history", async (req, res) => {
+	// body info
+	const { accountNumber } = req.user;
+
+	//get users
+	const users = await UserModel.find();
+
+	// console.log(users);
+
+	//check user exist?
+	var userIndex = users.findIndex((x) => {
+		if (x.accountNumber === accountNumber) return true;
+		return false;
+	});
+	if (userIndex === -1) {
+		return res.status(404).json({ message: "Not found user" });
+	}
+
+	//define data to return
+	var data = [];
+	TransactionModel.find({
+		isVerified: true,
+		$or: [{ sentUserId: accountNumber }, { receivedUserId: accountNumber }],
+	}).exec(function (err, trans) {
+		if (err) {
+			return res.status(500).json({ message: err });
+		} else {
+			for (let i = 0; i < trans.length; i++) {
+				// let us = users.findOne((x) => x.accountNumber === trans[i].sentUserId);
+				const indexSentUser = users.findIndex((x) => {
+					if (x.accountNumber === trans[i].sentUserId) return true;
+					return false;
+				});
+				const indexReceivedUser = users.findIndex((x) => {
+					if (x.accountNumber === trans[i].receivedUserId) return true;
+					return false;
+				});
+				// let ur = users.findOne(
+				// 	(x) => x.accountNumber === trans[i].receivedUserId
+				// );
+				var obj = {
+					sentUserId: trans[i].sentUserId,
+					sentUserName:
+						users[indexSentUser] != null ? users[indexSentUser].name : null,
+					sentBankId: trans[i].sentBankId,
+					receivedUserId: trans[i].receivedUserId,
+					receivedUserName:
+						users[indexReceivedUser] != null
+							? users[indexReceivedUser].name
+							: null,
+					receivedBankId: trans[i].receivedBankId,
+					isDebt: trans[i].isDebt,
+					isReceiverPaid: trans[i].isReceiverPaid,
+					amount: trans[i].amount,
+					content: trans[i].content,
+				};
+
+				data.push(obj);
+			}
+		}
+		return res.json({ data: data });
+	});
+
+	//return result
+});
+
 router.get("/", async (req, res) => {
 	const allUserTrans = await TransactionModel.find()
 		.then((data) => data)
@@ -306,5 +372,4 @@ router.delete("/", async (req, res) => {
 });
 
 ////////
-
 module.exports = router;
