@@ -314,10 +314,11 @@ router.get("/:id", async (req, res) => {
 		const result = {
 			accountNumber: findingUser[0].accountNumber,
 			name: findingUser[0].name,
+			username: findingUser[0].username,
 		};
 		return res.json(result);
 	}
-	return res.json({
+	return res.status(400).json({
 		error: "Không có dữ liệu nào của người dùng!",
 	});
 });
