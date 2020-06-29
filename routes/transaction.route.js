@@ -14,13 +14,10 @@ const fees = 10000;
 const minimumAmount = 50000;
 
 router.get("/history", async (req, res) => {
-	// body info
 	const { accountNumber } = req.user;
 
-	//get users
+	// Lấy dữ liệu 1 lần tất cả users, ko cần đụng db nhiều
 	const users = await UserModel.find();
-
-	// console.log(users);
 
 	//check user exist?
 	var userIndex = users.findIndex((x) => {
@@ -68,6 +65,7 @@ router.get("/history", async (req, res) => {
 					isReceiverPaid: trans[i].isReceiverPaid,
 					amount: trans[i].amount,
 					content: trans[i].content,
+					createdAt: trans[i].createdAt,
 				};
 
 				data.push(obj);
@@ -121,7 +119,7 @@ router.post("/", (req, res) => {
 
 	//add new transaction
 	const model = {
-		sentUserId: currentUser.id,
+		sentUserId: currentUser.accountNumber,
 		sentBankId: currentUser.bankId ? currentUser.bankId : 0,
 		receivedUserId: receivedUserId,
 		receivedBankId: receivedBankId,
@@ -130,7 +128,7 @@ router.post("/", (req, res) => {
 		isReceiverPaid: isReceiverPaid,
 		amount: amount,
 		content: content,
-		signature: (receivedBankId = 0 ? "" : signature),
+		signature: receivedBankId === 0 ? "" : signature,
 	};
 
 	if (amount < minimumAmount)
@@ -178,7 +176,7 @@ router.post("/", (req, res) => {
 				} else {
 					console.log("Email sent: " + info.response);
 					return res.json({
-						message: "Gửi Otp thành công",
+						message: `Gửi Otp thành công ${code}`,
 						data: { transactionId: tran._id, createdAt: tran.createdAt },
 					});
 				}
