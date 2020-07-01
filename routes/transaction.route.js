@@ -3,6 +3,7 @@ const router = express.Router();
 const { totp } = require("otplib");
 const nodemailer = require("nodemailer");
 const md5 = require("md5");
+const config = require("../config/default.json");
 
 const TransactionModel = require("../models/transaction.model");
 const UserModel = require("../models/users.model");
@@ -11,6 +12,70 @@ const { message } = require("openpgp");
 const keyOTP = "#@vevyveryOTPsecretkey@#";
 const fees = 10000;
 const minimumAmount = 50000;
+
+router.get("/history", async (req, res) => {
+	const { accountNumber } = req.user;
+
+	// Lấy dữ liệu 1 lần tất cả users, ko cần đụng db nhiều
+	const users = await UserModel.find();
+
+	//check user exist?
+	var userIndex = users.findIndex((x) => {
+		if (x.accountNumber === accountNumber) return true;
+		return false;
+	});
+	if (userIndex === -1) {
+		return res.status(404).json({ message: "Not found user" });
+	}
+
+	//define data to return
+	var data = [];
+	TransactionModel.find({
+		isVerified: true,
+		$or: [{ sentUserId: accountNumber }, { receivedUserId: accountNumber }],
+	}).exec(function (err, trans) {
+		if (err) {
+			return res.status(500).json({ message: err });
+		} else {
+			for (let i = 0; i < trans.length; i++) {
+				// let us = users.findOne((x) => x.accountNumber === trans[i].sentUserId);
+				const indexSentUser = users.findIndex((x) => {
+					if (x.accountNumber === trans[i].sentUserId) return true;
+					return false;
+				});
+				const indexReceivedUser = users.findIndex((x) => {
+					if (x.accountNumber === trans[i].receivedUserId) return true;
+					return false;
+				});
+				// let ur = users.findOne(
+				// 	(x) => x.accountNumber === trans[i].receivedUserId
+				// );
+				var obj = {
+					sentUserId: trans[i].sentUserId,
+					sentUserName:
+						users[indexSentUser] != null ? users[indexSentUser].name : null,
+					sentBankId: trans[i].sentBankId,
+					receivedUserId: trans[i].receivedUserId,
+					receivedUserName:
+						users[indexReceivedUser] != null
+							? users[indexReceivedUser].name
+							: null,
+					receivedBankId: trans[i].receivedBankId,
+					isDebt: trans[i].isDebt,
+					isReceiverPaid: trans[i].isReceiverPaid,
+					amount: trans[i].amount,
+					content: trans[i].content,
+					createdAt: trans[i].createdAt,
+				};
+
+				data.push(obj);
+			}
+		}
+		return res.json({ data: data });
+	});
+
+	//return result
+});
 
 router.get("/", async (req, res) => {
 	const allUserTrans = await TransactionModel.find()
@@ -50,10 +115,11 @@ router.post("/", (req, res) => {
 	console.log(req.body);
 
 	const currentUser = req.user;
+	console.log(req.user);
 
 	//add new transaction
 	const model = {
-		sentUserId: currentUser.id,
+		sentUserId: currentUser.accountNumber,
 		sentBankId: currentUser.bankId ? currentUser.bankId : 0,
 		receivedUserId: receivedUserId,
 		receivedBankId: receivedBankId,
@@ -62,7 +128,7 @@ router.post("/", (req, res) => {
 		isReceiverPaid: isReceiverPaid,
 		amount: amount,
 		content: content,
-		signature: (bankId = 0 ? "" : signature),
+		signature: receivedBankId === 0 ? "" : signature,
 	};
 
 	if (amount < minimumAmount)
@@ -84,18 +150,9 @@ router.post("/", (req, res) => {
 			await tran.save();
 
 			//send mail
-			var transporter = nodemailer.createTransport({
-				host: "smtp.gmail.com",
-				port: 465,
-				secure: true,
-				auth: {
-					user: "khactrieuhcmus@gmail.com",
-					pass: "khactrieuserver",
-				},
-				tls: {
-					rejectUnauthorized: false,
-				},
-			});
+			var transporter = nodemailer.createTransport(
+				config.emailTransportOptions
+			);
 
 			var content = "";
 			content += `<div>
@@ -119,7 +176,7 @@ router.post("/", (req, res) => {
 				} else {
 					console.log("Email sent: " + info.response);
 					return res.json({
-						message: "Gửi Otp thành công",
+						message: `Gửi Otp thành công ${code}`,
 						data: { transactionId: tran._id, createdAt: tran.createdAt },
 					});
 				}
@@ -192,18 +249,7 @@ router.post("/verify-code", async (req, res) => {
 	// send mail, the later version with use realtime
 
 	//send to sender
-	var transporter = nodemailer.createTransport({
-		host: "smtp.gmail.com",
-		port: 465,
-		secure: true,
-		auth: {
-			user: "khactrieuhcmus@gmail.com",
-			pass: "khactrieuserver",
-		},
-		tls: {
-			rejectUnauthorized: false,
-		},
-	});
+	var transporter = nodemailer.createTransport(config.emailTransportOptions);
 
 	var content = "";
 	content += `<div>
@@ -232,18 +278,7 @@ router.post("/verify-code", async (req, res) => {
 	});
 
 	//send to receiver
-	var transporter2 = nodemailer.createTransport({
-		host: "smtp.gmail.com",
-		port: 465,
-		secure: true,
-		auth: {
-			user: "khactrieuhcmus@gmail.com",
-			pass: "khactrieuserver",
-		},
-		tls: {
-			rejectUnauthorized: false,
-		},
-	});
+	var transporter2 = nodemailer.createTransport(config.emailTransportOptions);
 
 	var content2 = "";
 	content2 += `<div>
@@ -335,5 +370,4 @@ router.delete("/", async (req, res) => {
 });
 
 ////////
-
 module.exports = router;

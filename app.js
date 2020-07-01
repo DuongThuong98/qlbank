@@ -57,14 +57,27 @@ app.use(
 	passport.authenticate("jwt", { session: false }),
 	require("./routes/bank.route")
 );
-app.use("/api/user-receiver",
+app.use(
+	"/api/user-receiver",
 	passport.authenticate("jwt", { session: false }),
-	require("./routes/userReceiver.route"))
-	;
-app.use("/api/transaction", require("./routes/transaction.route"));
-app.use("/api/debt",
+	require("./routes/userReceiver.route")
+);
+app.use(
+	"/api/transaction",
 	passport.authenticate("jwt", { session: false }),
-	require("./routes/debtNotification.route"));
+	require("./routes/transaction.route")
+);
+app.use(
+	"/api/debt",
+	passport.authenticate("jwt", { session: false }),
+	require("./routes/debtNotification.route")
+);
+
+app.use(
+	"/api/admin",
+	passport.authenticate("jwt", { session: false }),
+	require("./routes/admin.route")
+);
 
 app.use((req, res, next) => {
 	res.status(404).send("NOT FOUND");
@@ -77,7 +90,7 @@ app.use(function (err, req, res, next) {
 	res.status(statusCode).send("View error log on console.");
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
 	console.log(`API running on port ${PORT}`);
 });
