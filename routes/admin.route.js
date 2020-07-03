@@ -172,4 +172,22 @@ router.get("/all-users", async (req, res) => {
 	return res.json(findingUsers);
 });
 
+// ----- Get all employees with full information -----
+router.get("/all-employees", async (req, res) => {
+	const findingUsers = await usersModel
+		.find({ role: "employee" })
+		.then((result) => result)
+		.catch((err) => {
+			throw new Error(err);
+		});
+	if (!findingUsers || findingUsers.length === 0)
+		return res.status(400).json([]);
+
+	// findingUsers.length > 0
+	findingUsers.forEach((element) => {
+		element.passwordHash = "";
+	});
+	return res.json(findingUsers);
+});
+
 module.exports = router;
