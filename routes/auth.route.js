@@ -2,6 +2,7 @@ const express = require("express");
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const usersModel = require("../models/users.model");
+const helpers = require("../helpers/helpers");
 const bcrypt = require("bcryptjs");
 const { totp } = require("otplib");
 const nodemailer = require("nodemailer");
@@ -19,7 +20,7 @@ router.post("/login", (req, res) => {
 			const { username, role } = user;
 			console.log(user);
 
-			const temp = "12345";
+			const temp = helpers.randomString(40);
 			const result = await usersModel.findOneAndUpdate(
 				{ username: username },
 				{
@@ -59,12 +60,12 @@ router.post('/refresh', async (req, res) => {
 		console.log(ret)
 		if (ret) {
 			const accessToken = generateAccessToken(username, role);
-			res.json({ accessToken: accessToken });
+			res.status(200).json({ accessToken: accessToken });
 		}
 		else {
-			throw new Error("không tạo được accesstoken mới");
+			//throw new Error("Mã token sai");
+			res.status(401).json({ message: "Refresh không thành công"});
 		}
-
 	})
 });
 
