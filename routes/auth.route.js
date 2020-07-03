@@ -3,9 +3,10 @@ const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const usersModel = require("../models/users.model");
 const bcrypt = require("bcryptjs");
-
 const { totp } = require("otplib");
 const nodemailer = require("nodemailer");
+
+// const config = require('../config/default.json');
 
 const router = express.Router();
 
@@ -17,6 +18,14 @@ router.post("/login", (req, res) => {
 			if (error) throw new Error();
 			const { username, role } = user;
 			console.log(user);
+
+			const temp = "12345";
+			const result = await usersModel.findOneAndUpdate(
+				{ username: username },
+				{
+					refreshToken: temp,
+				}
+			);
 			const accessToken = generateAccessToken(username, role);
 			return res.json({ accessToken: accessToken });
 		});
@@ -32,6 +41,35 @@ const generateAccessToken = (username, role) =>
 		"secretKey",
 		{ expiresIn: "10m" }
 	);
+
+//refresh token
+router.post('/refresh', async (req, res) => {
+	// req.body = {
+	//   accessToken,
+	//   refreshToken
+	// }
+	const user = req.user;
+	
+	jwt.verify(req.body.accessToken, "secretKey", { ignoreExpiration: true }, async function (err, payload) {
+		const { username, role } = payload;
+		// console.log(req.body);
+		
+		// console.log(payload)
+		const ret = await usersModel.findOne({ $and: [{ username: username }, { refreshToken: req.body.refreshToken }] });
+		console.log(ret)
+		if (ret) {
+			const accessToken = generateAccessToken(username, role);
+			res.json({ accessToken: accessToken });
+		}
+		else {
+			throw new Error("không tạo được accesstoken mới");
+		}
+
+	})
+});
+
+
+
 
 // region forgot password
 router.post("/forgot-password", async (req, res) => {

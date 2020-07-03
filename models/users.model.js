@@ -23,7 +23,10 @@ const UserSchema = mongoose.Schema(
 		phone: String,
 		balance: { type: Number, default: 50000 },
 		permission: { type: Boolean, default: true },
-		refreshToken: String,
+		refreshToken: {
+			type: String,
+			default: ""
+		},
 		rdt: Date,
 		receivers: { type: Array, default: [] }, // [{accountNumber: String, bankId: String, savedName: String}]
 	},

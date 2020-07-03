@@ -15,6 +15,7 @@ passport.use(
 		(username, password, done) => {
 			UsersModel.findOne({ username: username }, (err, rows) => {
 				if (err) return done(err);
+
 				if (!rows || rows.length === 0) {
 					return done(null, false, {
 						message: "Invalid username or password!",
@@ -29,6 +30,7 @@ passport.use(
 						return done(null, rows);
 					});
 				}
+
 			});
 		}
 	)
@@ -49,6 +51,7 @@ passport.use(
 			secretOrKey: "secretKey",
 		},
 		function (jwtPayload, next) {
+			
 			return UsersModel.findOne(
 				{ username: jwtPayload.username },
 				(err, user) => {
