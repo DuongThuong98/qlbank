@@ -53,7 +53,7 @@ router.post("/user-history-transactions", async (req, res) => {
 				// 	(x) => x.accountNumber === trans[i].receivedUserId
 				// );
 				var obj = {
-					transactionId: trans[i].id,
+					transactionId: trans[i]._id,
 					sentUserId: trans[i].sentUserId,
 					sentUserName:
 						users[indexSentUser] != null ? users[indexSentUser].name : null,
@@ -168,7 +168,6 @@ router.get("/all-users", async (req, res) => {
 	// findingUsers.length > 0
 	findingUsers.forEach((element) => {
 		element.passwordHash = "";
-		delete element.passwordHash;
 	});
 	return res.json(findingUsers);
 });
