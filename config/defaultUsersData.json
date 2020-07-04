@@ -1,0 +1,447 @@
+[
+	{
+		"_id": {
+			"$oid": "5ec4d6e6b7cee446d0f07396"
+		},
+		"accountNumber": "1",
+		"balance": 5200000,
+		"status": true,
+		"username": "thoi",
+		"name": "Huỳnh Hữu Thời",
+		"role": "customer",
+		"email": "khactrieu98@gmail.com",
+		"phone": "0903020298",
+		"passwordHash": "$2a$10$RZBOripSukMWDyOH.BVTPeaJtijnGJ4YvARwKENpWUfATMrqvMX2m",
+		"createdAt": {
+			"$date": "2020-05-20T07:06:14.800Z"
+		},
+		"updatedAt": {
+			"$date": "2020-07-03T09:39:52.041Z"
+		},
+		"__v": 1,
+		"permission": true,
+		"receivers": [
+			{
+				"savedName": "Thuong heoooo",
+				"bankId": 0,
+				"accountNumber": "2"
+			},
+			{
+				"savedName": "1234",
+				"bankId": 0,
+				"accountNumber": "7"
+			},
+			{
+				"savedName": "trieu",
+				"bankId": 0,
+				"accountNumber": "3"
+			}
+		],
+		"refreshToken": "12345"
+	},
+	{
+		"_id": {
+			"$oid": "5ec6c5eadbe1c741f009d913"
+		},
+		"accountNumber": "2",
+		"balance": 540000,
+		"status": true,
+		"username": "thuong",
+		"name": "Dương Văn Thưởng",
+		"email": "vanthuong@gmail.com",
+		"phone": "0901239812",
+		"role": "customer",
+		"passwordHash": "$2a$10$ku4hKF0k6E5YVCGsfMNSH.8cgns89xjxiPX1PhXwNVYTn6ROY/vz6",
+		"createdAt": {
+			"$date": "2020-05-21T18:18:19.147Z"
+		},
+		"updatedAt": {
+			"$date": "2020-06-29T02:53:47.741Z"
+		},
+		"__v": 0,
+		"receivers": [
+			{
+				"savedName": "Thoi Backend HCMUS",
+				"bankId": 0,
+				"accountNumber": "1"
+			},
+			{
+				"savedName": "Trieu FrontEnd",
+				"bankId": 0,
+				"accountNumber": "3"
+			}
+		],
+		"permission": true
+	},
+	{
+		"_id": {
+			"$oid": "5ec78df9cf75d52f1427e7bc"
+		},
+		"balance": 4900000,
+		"status": true,
+		"accountNumber": "3",
+		"username": "trieu",
+		"name": "Nguyễn Ngọc Khắc Triệu",
+		"email": "khactrieu98@gmail.com",
+		"phone": "0903020298",
+		"role": "customer",
+		"passwordHash": "$2a$10$KGQBkmKQUjM98EsOAFAAQO2HwxIIfueD8lvYaEhznH7xK8TXdSjoa",
+		"createdAt": {
+			"$date": "2020-05-22T08:31:53.916Z"
+		},
+		"updatedAt": {
+			"$date": "2020-07-04T04:54:06.560Z"
+		},
+		"__v": 0,
+		"receivers": [
+			{
+				"savedName": "Phuc Mappppp",
+				"bankId": 0,
+				"accountNumber": "7"
+			},
+			{
+				"savedName": "Lan",
+				"bankId": 0,
+				"accountNumber": "9"
+			},
+			{
+				"savedName": "Huy ngu",
+				"bankId": 0,
+				"accountNumber": "5"
+			},
+			{
+				"savedName": "Dũng",
+				"bankId": 0,
+				"accountNumber": "6"
+			},
+			{
+				"savedName": "Vũ",
+				"bankId": 0,
+				"accountNumber": "4"
+			}
+		],
+		"permission": true,
+		"refreshToken": "V5OGjF0Xr6PbAy5qLxz6NEFdzh1vEUn1wppDcMvc"
+	},
+	{
+		"_id": {
+			"$oid": "5ecbeef08cd91e2318586ec7"
+		},
+		"balance": 190000,
+		"status": true,
+		"accountNumber": "4",
+		"username": "lqvu",
+		"name": "Lâm Quang Vũ",
+		"email": "lqvu@gmail.com",
+		"phone": "0978748787",
+		"role": "customer",
+		"passwordHash": "$2a$10$.XhYh4kbZra9L9LlEhVCQOC1vynJcfxEtzEVgWLlIy8MVktDrDNj.",
+		"createdAt": {
+			"$date": "2020-05-25T16:14:40.841Z"
+		},
+		"updatedAt": {
+			"$date": "2020-06-24T10:51:22.502Z"
+		},
+		"__v": 1,
+		"permission": true,
+		"receivers": []
+	},
+	{
+		"_id": {
+			"$oid": "5ee7295169a4733c08be78e5"
+		},
+		"balance": 50000,
+		"status": true,
+		"accountNumber": "4",
+		"username": "trong",
+		"name": "Trần Bảo Trọng",
+		"email": "baotrong@gmail.com",
+		"phone": "0932321442",
+		"role": "customer",
+		"passwordHash": "$2a$10$/gzHL6uWA.a5OcEDZtDlJe8gSqjeS9OHNV5Qb3mpvQkeCnHw.LBsy",
+		"createdAt": {
+			"$date": "2020-05-22T08:31:53.916Z"
+		},
+		"updatedAt": {
+			"$date": "2020-06-15T07:42:19.548Z"
+		},
+		"__v": 0,
+		"receivers": [
+			{
+				"savedName": "Thuong",
+				"bankId": 0,
+				"accountNumber": "2"
+			},
+			{
+				"savedName": "Thoi",
+				"bankId": 0,
+				"accountNumber": "1"
+			},
+			{
+				"savedName": "VU",
+				"bankId": 1,
+				"accountNumber": "4"
+			}
+		]
+	},
+	{
+		"_id": {
+			"$oid": "5ee7296769a4733c08be78e6"
+		},
+		"balance": 49540000,
+		"status": true,
+		"accountNumber": "5",
+		"username": "huy",
+		"name": "Trần Quang Huy",
+		"email": "wewewe@gmail.com",
+		"phone": "0932321423",
+		"role": "customer",
+		"passwordHash": "$2a$10$/gzHL6uWA.a5OcEDZtDlJe8gSqjeS9OHNV5Qb3mpvQkeCnHw.LBsy",
+		"createdAt": {
+			"$date": "2020-05-22T08:31:53.916Z"
+		},
+		"updatedAt": {
+			"$date": "2020-07-03T07:37:43.099Z"
+		},
+		"__v": 0,
+		"receivers": [
+			{
+				"savedName": "Thuong",
+				"bankId": 0,
+				"accountNumber": "2"
+			},
+			{
+				"savedName": "Thoi",
+				"bankId": 0,
+				"accountNumber": "1"
+			},
+			{
+				"savedName": "VU",
+				"bankId": 1,
+				"accountNumber": "4"
+			}
+		],
+		"permission": true,
+		"refreshToken": "12345"
+	},
+	{
+		"_id": {
+			"$oid": "5ee7298b69a4733c08be78e7"
+		},
+		"balance": 50000,
+		"status": true,
+		"accountNumber": "6",
+		"username": "dung",
+		"name": "Lương Duy Dũng",
+		"email": "duydung7920@gmail.com",
+		"phone": "0932309023",
+		"role": "customer",
+		"passwordHash": "$2a$10$/gzHL6uWA.a5OcEDZtDlJe8gSqjeS9OHNV5Qb3mpvQkeCnHw.LBsy",
+		"createdAt": {
+			"$date": "2020-05-22T08:31:53.916Z"
+		},
+		"updatedAt": {
+			"$date": "2020-06-15T07:42:19.548Z"
+		},
+		"__v": 0,
+		"receivers": [
+			{
+				"savedName": "Thuong",
+				"bankId": 0,
+				"accountNumber": "2"
+			},
+			{
+				"savedName": "Thoi",
+				"bankId": 0,
+				"accountNumber": "1"
+			},
+			{
+				"savedName": "VU",
+				"bankId": 1,
+				"accountNumber": "4"
+			}
+		]
+	},
+	{
+		"_id": {
+			"$oid": "5ee729d269a4733c08be78e8"
+		},
+		"balance": 3110000,
+		"status": true,
+		"accountNumber": "7",
+		"username": "phuc",
+		"name": "Trương Vĩnh Phúc",
+		"email": "phuctruong@gmail.com",
+		"phone": "0909409023",
+		"role": "customer",
+		"passwordHash": "$2a$10$k617LGlcE3YT3i/IL0dZi.K2BS3wuiefpsH2YUnVFu39bAq2.swMe",
+		"createdAt": {
+			"$date": "2020-05-22T08:31:53.916Z"
+		},
+		"updatedAt": {
+			"$date": "2020-07-03T12:09:14.407Z"
+		},
+		"__v": 0,
+		"receivers": [
+			{
+				"savedName": "Thuong",
+				"bankId": 0,
+				"accountNumber": "2"
+			},
+			{
+				"savedName": "Thoi",
+				"bankId": 0,
+				"accountNumber": "1"
+			},
+			{
+				"savedName": "VU",
+				"bankId": 1,
+				"accountNumber": "4"
+			}
+		],
+		"permission": true,
+		"refreshToken": "12345"
+	},
+	{
+		"_id": {
+			"$oid": "5ee729f569a4733c08be78e9"
+		},
+		"balance": 50000,
+		"status": true,
+		"accountNumber": "8",
+		"username": "tram",
+		"name": "Nguyễn Thị Ngọc Trâm",
+		"email": "nhatcheckngoctram@gmail.com",
+		"phone": "0909139923",
+		"role": "customer",
+		"passwordHash": "$2a$10$2Zjk4n6J1mPM9yvtzDNTvudS0DOsAO02rm3LutkDmpBh0fsD8U2TG",
+		"createdAt": {
+			"$date": "2020-05-22T08:31:53.916Z"
+		},
+		"updatedAt": {
+			"$date": "2020-06-16T17:35:54.894Z"
+		},
+		"__v": 0,
+		"receivers": []
+	},
+	{
+		"_id": {
+			"$oid": "5ee7b46dd29bcf21f4f033cb"
+		},
+		"balance": 2050000,
+		"status": true,
+		"accountNumber": "9",
+		"username": "lan",
+		"name": "Đỗ Ngọc Lan",
+		"email": "ngoclan@gmail.com",
+		"phone": "0909410299",
+		"role": "customer",
+		"passwordHash": "$2a$10$/gzHL6uWA.a5OcEDZtDlJe8gSqjeS9OHNV5Qb3mpvQkeCnHw.LBsy",
+		"createdAt": {
+			"$date": "2020-05-22T08:31:53.916Z"
+		},
+		"updatedAt": {
+			"$date": "2020-07-03T11:10:03.725Z"
+		},
+		"__v": 0,
+		"receivers": [],
+		"permission": true,
+		"refreshToken": ""
+	},
+	{
+		"_id": {
+			"$oid": "5ee9a06f2b0e7105c0e3f68c"
+		},
+		"balance": 50000,
+		"status": true,
+		"accountNumber": "0001",
+		"username": "admin-minh",
+		"name": "Vũ Hoàng Minh",
+		"email": "vuhoangminh@gmail.com",
+		"phone": "0909139923",
+		"role": "admin",
+		"passwordHash": "$2a$10$2Zjk4n6J1mPM9yvtzDNTvudS0DOsAO02rm3LutkDmpBh0fsD8U2TG",
+		"createdAt": {
+			"$date": "2020-05-22T08:31:53.916Z"
+		},
+		"updatedAt": {
+			"$date": "2020-06-16T17:35:54.894Z"
+		},
+		"__v": 0,
+		"receivers": []
+	},
+	{
+		"_id": {
+			"$oid": "5ee9a0ac2b0e7105c0e3f68d"
+		},
+		"balance": 50000,
+		"status": true,
+		"accountNumber": "0002",
+		"username": "hoangadmin",
+		"name": "Nguyễn Minh Hoàng",
+		"email": "nguyenminhhoang@gmail.com",
+		"phone": "0909139923",
+		"role": "admin",
+		"passwordHash": "$2a$10$2Zjk4n6J1mPM9yvtzDNTvudS0DOsAO02rm3LutkDmpBh0fsD8U2TG",
+		"createdAt": {
+			"$date": "2020-05-22T08:31:53.916Z"
+		},
+		"updatedAt": {
+			"$date": "2020-07-03T12:28:22.525Z"
+		},
+		"__v": 0,
+		"receivers": [],
+		"refreshToken": "12345"
+	},
+	{
+		"_id": {
+			"$oid": "5ee9a1bf2b0e7105c0e3f68e"
+		},
+		"balance": 50000,
+		"status": true,
+		"accountNumber": "0011",
+		"username": "employee-uyen",
+		"name": "Vũ Thảo Uyên",
+		"email": "tuuyenbunun@gmail.com",
+		"phone": "0909139923",
+		"role": "employee",
+		"passwordHash": "$2a$10$Rmg0yO3twPjprcmzu2mtgeOEyofqJEOuYTaxiZvCpJ0X8axDEjssm",
+		"createdAt": {
+			"$date": "2020-05-22T08:31:53.916Z"
+		},
+		"updatedAt": {
+			"$date": "2020-07-04T04:52:42.105Z"
+		},
+		"__v": 0,
+		"receivers": [],
+		"refreshToken": "F6gK33pVB1uSUL2qYtWy0rtVrKjJvPUxXKuEDLeV"
+	},
+	{
+		"_id": {
+			"$oid": "5eea0dcd0a779b080cd69662"
+		},
+		"balance": 50000,
+		"permission": true,
+		"receivers": [
+			{
+				"savedName": "Triệu HP",
+				"bankId": 0,
+				"accountNumber": "3"
+			}
+		],
+		"accountNumber": "10",
+		"username": "phuc233",
+		"name": "Nguyễn Hoàng Phúc",
+		"email": "hoangphuchp@gmail.com",
+		"phone": "0909861912",
+		"role": "customer",
+		"passwordHash": "$2a$10$2KOimaa2OOyU0Rz14s/5WOShZTPZ.Ttkr6p7b9XPKyigCViP6lDYG",
+		"createdAt": {
+			"$date": "2020-06-17T12:34:21.938Z"
+		},
+		"updatedAt": {
+			"$date": "2020-06-17T12:35:15.267Z"
+		},
+		"__v": 0
+	}
+]
