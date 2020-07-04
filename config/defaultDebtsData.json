@@ -1,0 +1,201 @@
+[{
+  "_id": {
+    "$oid": "5efc4dff669bee252cefc460"
+  },
+  "sentBankId": 0,
+  "receivedBankId": 0,
+  "updatedBySentUser": 1,
+  "status": "deleted",
+  "debtContent": "Tui là bạn Triệu nè :D",
+  "feedbackContent": "qưe",
+  "sentUserId": "3",
+  "receivedUserId": "2",
+  "amount": 59000,
+  "createdAt": {
+    "$date": "2020-07-01T08:49:03.673Z"
+  },
+  "updatedAt": {
+    "$date": "2020-07-03T07:00:55.808Z"
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "5efc5d52c283f900dc7baaa0"
+  },
+  "sentBankId": 0,
+  "receivedBankId": 0,
+  "updatedBySentUser": -1,
+  "status": "pending",
+  "debtContent": "Bữa nợ tiền bánh bao nha",
+  "feedbackContent": "",
+  "sentUserId": "7",
+  "receivedUserId": "1",
+  "amount": 70000,
+  "createdAt": {
+    "$date": "2020-07-01T09:54:26.298Z"
+  },
+  "updatedAt": {
+    "$date": "2020-07-01T09:54:26.298Z"
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "5efc5d61c283f900dc7baaa1"
+  },
+  "sentBankId": 0,
+  "receivedBankId": 0,
+  "updatedBySentUser": 1,
+  "status": "deleted",
+  "debtContent": "Tiền nhậu 10/6",
+  "feedbackContent": "Nhầm",
+  "sentUserId": "7",
+  "receivedUserId": "2",
+  "amount": 50000,
+  "createdAt": {
+    "$date": "2020-07-01T09:54:41.312Z"
+  },
+  "updatedAt": {
+    "$date": "2020-07-03T06:39:11.522Z"
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "5efc5d76c283f900dc7baaa2"
+  },
+  "sentBankId": 0,
+  "receivedBankId": 0,
+  "updatedBySentUser": 1,
+  "status": "deleted",
+  "debtContent": "Bữa em đóng dư 200k, thầy gửi lại giúp em với",
+  "feedbackContent": "Dạ em nhầm",
+  "sentUserId": "7",
+  "receivedUserId": "4",
+  "amount": 200000,
+  "createdAt": {
+    "$date": "2020-07-01T09:55:02.963Z"
+  },
+  "updatedAt": {
+    "$date": "2020-07-03T06:38:38.894Z"
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "5efd9331c2763633d04a1093"
+  },
+  "sentBankId": 0,
+  "receivedBankId": 0,
+  "updatedBySentUser": 0,
+  "status": "deleted",
+  "debtContent": "Thằng mập lo trả tiền học nha",
+  "feedbackContent": "Không có nha ba, bữa trả rùi",
+  "sentUserId": "1",
+  "receivedUserId": "7",
+  "amount": 200000,
+  "createdAt": {
+    "$date": "2020-07-02T07:56:33.217Z"
+  },
+  "updatedAt": {
+    "$date": "2020-07-03T06:31:07.756Z"
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "5efdba833f215f0cc8722dfa"
+  },
+  "sentBankId": 0,
+  "receivedBankId": 0,
+  "updatedBySentUser": 1,
+  "status": "deleted",
+  "debtContent": "Có trả không thì bảo?",
+  "feedbackContent": "",
+  "sentUserId": "7",
+  "receivedUserId": "2",
+  "amount": 70000,
+  "createdAt": {
+    "$date": "2020-07-02T10:44:19.208Z"
+  },
+  "updatedAt": {
+    "$date": "2020-07-03T06:29:57.696Z"
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "5efed16bf31ec94408d88960"
+  },
+  "sentBankId": 0,
+  "receivedBankId": 0,
+  "updatedBySentUser": 0,
+  "status": "deleted",
+  "debtContent": "Đưa tiền mua banh",
+  "feedbackContent": "Bữa đưa tiền mặt rồi mà",
+  "sentUserId": "3",
+  "receivedUserId": "7",
+  "amount": 230000,
+  "createdAt": {
+    "$date": "2020-07-03T06:34:19.346Z"
+  },
+  "updatedAt": {
+    "$date": "2020-07-03T06:37:04.001Z"
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "5efed79ef31ec94408d88961"
+  },
+  "sentBankId": 0,
+  "receivedBankId": 0,
+  "updatedBySentUser": 1,
+  "status": "deleted",
+  "debtContent": "Hehehe",
+  "feedbackContent": "Hong!",
+  "sentUserId": "3",
+  "receivedUserId": "7",
+  "amount": 100000,
+  "createdAt": {
+    "$date": "2020-07-03T07:00:46.873Z"
+  },
+  "updatedAt": {
+    "$date": "2020-07-03T07:01:47.823Z"
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "5efedae3f6669741c4bec7a1"
+  },
+  "sentBankId": 0,
+  "receivedBankId": 0,
+  "updatedBySentUser": -1,
+  "status": "pending",
+  "debtContent": "Tiền 20/2",
+  "feedbackContent": "",
+  "sentUserId": "3",
+  "receivedUserId": "2",
+  "amount": 500000,
+  "createdAt": {
+    "$date": "2020-07-03T07:14:43.795Z"
+  },
+  "updatedAt": {
+    "$date": "2020-07-03T07:14:43.795Z"
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "5efee3225d1f742b901ab8b7"
+  },
+  "sentBankId": 0,
+  "receivedBankId": 0,
+  "updatedBySentUser": 1,
+  "status": "deleted",
+  "debtContent": "123",
+  "feedbackContent": "Éo",
+  "sentUserId": "3",
+  "receivedUserId": "1",
+  "amount": 50000,
+  "createdAt": {
+    "$date": "2020-07-03T07:49:54.583Z"
+  },
+  "updatedAt": {
+    "$date": "2020-07-03T10:58:40.081Z"
+  },
+  "__v": 0
+}]

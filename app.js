@@ -26,7 +26,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 mongoose.Promise = global.Promise;
 // process.env.mongoURL ||
 mongoose
-	.connect(process.env.mongoURL || config.mongodb.localUrl, {
+	.connect(process.env.mongoURL || config.mongodb.url, {
 		useNewUrlParser: true,
 		useUnifiedTopology: true,
 		useFindAndModify: false,

@@ -1,0 +1,301 @@
+[{
+  "_id": {
+    "$oid": "5ef700c77c0cea379834adfb"
+  },
+  "isDebt": false,
+  "isReceiverPaid": false,
+  "isVerified": true,
+  "sentUserId": "0011",
+  "sentBankId": 0,
+  "receivedUserId": "7",
+  "receivedBankId": 0,
+  "amount": 500000,
+  "content": "Nạp tiền cho khách hàng ngày Sat Jun 27 2020 15:12:25 GMT+0700 (Indochina Time)",
+  "createdAt": {
+    "$date": "2020-06-27T08:18:15.378Z"
+  },
+  "updatedAt": {
+    "$date": "2020-06-27T08:18:20.310Z"
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "5ef700ecf9298f076c35adb8"
+  },
+  "isDebt": false,
+  "isReceiverPaid": false,
+  "isVerified": true,
+  "sentUserId": "0011",
+  "sentBankId": 0,
+  "receivedUserId": "7",
+  "receivedBankId": 0,
+  "amount": 500000,
+  "content": "Nạp tiền cho khách hàng ngày Sat Jun 27 2020 15:12:25 GMT+0700 (Indochina Time)",
+  "createdAt": {
+    "$date": "2020-06-27T08:18:52.167Z"
+  },
+  "updatedAt": {
+    "$date": "2020-06-27T08:18:55.738Z"
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "5ef93c4df7b60a05b466696b"
+  },
+  "isDebt": false,
+  "isReceiverPaid": false,
+  "isVerified": false,
+  "sentUserId": "7",
+  "sentBankId": 0,
+  "receivedUserId": "1",
+  "receivedBankId": 0,
+  "amount": 50000,
+  "content": "Tui là bạn Triệu nè :D",
+  "createdAt": {
+    "$date": "2020-06-29T00:56:45.079Z"
+  },
+  "updatedAt": {
+    "$date": "2020-06-29T00:56:45.095Z"
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "5ef93c6ef7b60a05b466696c"
+  },
+  "isDebt": false,
+  "isReceiverPaid": false,
+  "isVerified": true,
+  "sentUserId": "7",
+  "sentBankId": 0,
+  "receivedUserId": "1",
+  "receivedBankId": 0,
+  "amount": 50000,
+  "content": "Tui là bạn Triệu nè :D",
+  "createdAt": {
+    "$date": "2020-06-29T00:57:18.599Z"
+  },
+  "updatedAt": {
+    "$date": "2020-06-29T00:57:37.452Z"
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "5ef93cf6f7b60a05b466696d"
+  },
+  "isDebt": false,
+  "isReceiverPaid": false,
+  "isVerified": true,
+  "sentUserId": "0011",
+  "sentBankId": 0,
+  "receivedUserId": "7",
+  "receivedBankId": 0,
+  "amount": 50000,
+  "content": "Nạp tiền cho khách hàng ngày Mon Jun 29 2020 07:59:30 GMT+0700 (Indochina Time)",
+  "createdAt": {
+    "$date": "2020-06-29T00:59:34.510Z"
+  },
+  "updatedAt": {
+    "$date": "2020-06-29T00:59:37.168Z"
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "5ef957b02b09c00be8a49f2b"
+  },
+  "isDebt": false,
+  "isReceiverPaid": true,
+  "isVerified": true,
+  "sentUserId": "7",
+  "sentBankId": 0,
+  "receivedUserId": "2",
+  "receivedBankId": 0,
+  "amount": 50000,
+  "content": "Trả ông tiền ăn hôm qua",
+  "createdAt": {
+    "$date": "2020-06-29T02:53:36.974Z"
+  },
+  "updatedAt": {
+    "$date": "2020-06-29T02:53:47.749Z"
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "5ef97ee9887d8d42cc1fb34d"
+  },
+  "isDebt": false,
+  "isReceiverPaid": false,
+  "isVerified": true,
+  "sentUserId": "3",
+  "sentBankId": 0,
+  "receivedUserId": "1",
+  "receivedBankId": 0,
+  "amount": 100000,
+  "content": "Tiền bánh bao thứ 7",
+  "createdAt": {
+    "$date": "2020-06-29T05:40:57.591Z"
+  },
+  "updatedAt": {
+    "$date": "2020-06-29T05:41:10.694Z"
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "5efc517521bac829b0ed2171"
+  },
+  "isDebt": false,
+  "isReceiverPaid": true,
+  "isVerified": true,
+  "sentUserId": "3",
+  "sentBankId": 0,
+  "receivedUserId": "7",
+  "receivedBankId": 0,
+  "amount": 200000,
+  "content": "Chó rách",
+  "createdAt": {
+    "$date": "2020-07-01T09:03:49.706Z"
+  },
+  "updatedAt": {
+    "$date": "2020-07-01T09:04:25.281Z"
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "5efdb9fb3f215f0cc8722df9"
+  },
+  "isDebt": false,
+  "isReceiverPaid": false,
+  "isVerified": false,
+  "sentUserId": "7",
+  "sentBankId": 0,
+  "receivedUserId": "2",
+  "receivedBankId": 0,
+  "amount": 50000,
+  "content": "asdasdasd si sfoije ri jesoti jdroigj dfoigbj fgbk droit gjrotij oeit ert",
+  "createdAt": {
+    "$date": "2020-07-02T10:42:03.042Z"
+  },
+  "updatedAt": {
+    "$date": "2020-07-02T10:42:03.056Z"
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "5efedf1b5d1f742b901ab8b2"
+  },
+  "isDebt": false,
+  "isReceiverPaid": false,
+  "isVerified": false,
+  "sentUserId": "7",
+  "sentBankId": 0,
+  "receivedUserId": "7",
+  "receivedBankId": 0,
+  "amount": 60000,
+  "content": "hhhhh",
+  "createdAt": {
+    "$date": "2020-07-03T07:32:43.921Z"
+  },
+  "updatedAt": {
+    "$date": "2020-07-03T07:32:43.934Z"
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "5efedf335d1f742b901ab8b3"
+  },
+  "isDebt": false,
+  "isReceiverPaid": false,
+  "isVerified": true,
+  "sentUserId": "7",
+  "sentBankId": 0,
+  "receivedUserId": "7",
+  "receivedBankId": 0,
+  "amount": 60000,
+  "content": "hhhhh",
+  "createdAt": {
+    "$date": "2020-07-03T07:33:07.037Z"
+  },
+  "updatedAt": {
+    "$date": "2020-07-03T07:33:22.405Z"
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "5efedfca5d1f742b901ab8b4"
+  },
+  "isDebt": false,
+  "isReceiverPaid": false,
+  "isVerified": true,
+  "sentUserId": "0011",
+  "sentBankId": 0,
+  "receivedUserId": "5",
+  "receivedBankId": 0,
+  "amount": 5000000,
+  "content": "Nạp tiền cho khách hàng ngày Fri Jul 03 2020 14:35:24 GMT+0700 (Indochina Time)",
+  "createdAt": {
+    "$date": "2020-07-03T07:35:38.183Z"
+  },
+  "updatedAt": {
+    "$date": "2020-07-03T07:35:44.860Z"
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "5efee0155d1f742b901ab8b5"
+  },
+  "isDebt": false,
+  "isReceiverPaid": false,
+  "isVerified": true,
+  "sentUserId": "0011",
+  "sentBankId": 0,
+  "receivedUserId": "5",
+  "receivedBankId": 0,
+  "amount": 45000000,
+  "content": "Nạp tiền cho khách hàng ngày Fri Jul 03 2020 14:36:41 GMT+0700 (Indochina Time)",
+  "createdAt": {
+    "$date": "2020-07-03T07:36:53.647Z"
+  },
+  "updatedAt": {
+    "$date": "2020-07-03T07:36:56.471Z"
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "5efee02e5d1f742b901ab8b6"
+  },
+  "isDebt": false,
+  "isReceiverPaid": false,
+  "isVerified": true,
+  "sentUserId": "5",
+  "sentBankId": 0,
+  "receivedUserId": "3",
+  "receivedBankId": 0,
+  "amount": 500000,
+  "content": "Cảm ơn nha",
+  "createdAt": {
+    "$date": "2020-07-03T07:37:18.677Z"
+  },
+  "updatedAt": {
+    "$date": "2020-07-03T07:37:43.104Z"
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "5eff120b3062a34a2036b4fd"
+  },
+  "isDebt": false,
+  "isReceiverPaid": false,
+  "isVerified": true,
+  "sentUserId": "0011",
+  "sentBankId": 0,
+  "receivedUserId": "9",
+  "receivedBankId": 0,
+  "amount": 2000000,
+  "content": "Nạp tiền cho khách hàng ngày Fri Jul 03 2020 18:09:51 GMT+0700 (Indochina Time)",
+  "createdAt": {
+    "$date": "2020-07-03T11:10:03.708Z"
+  },
+  "updatedAt": {
+    "$date": "2020-07-03T11:10:07.311Z"
+  },
+  "__v": 0
+}]

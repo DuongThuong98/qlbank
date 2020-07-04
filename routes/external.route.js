@@ -82,6 +82,33 @@ router.post("/customer", async (req, res) => {
 	);
 });
 
+router.post("/SAPHASANBank/customer", async (req, res) => {
+	const { customerId } = req.body;
+	console.log(req.body);
+	const timeStamp = Date.now();
+	const partnerCode = "baoSon123"; // SAPHASANBank
+	const bodyJson = { accountNumber: customerId };
+	const signature = timeStamp + bodyJson + md5("dungnoiaihet");
+	await axios
+		.post(`https://qlbank1.herokuapp.com/api/external/customer`, bodyJson, {
+			headers: {
+				ts: timeStamp,
+				partnerCode: partnerCode,
+				hashedSign: md5(signature),
+			},
+			// data: `id=${customerId}`,
+		})
+		.then((result) => {
+			const { data } = result;
+			console.log(result);
+			res.json(result.data);
+		})
+		.catch((error) => {
+			console.log(error);
+			res.json(error.response.data);
+		});
+});
+
 // --EXTERNAL-SERVER--- nhận request, hash + verify và nạp tiền
 router.post("/transaction", async (req, res) => {
 	// req -> headers [ts, partnerCode, hashedSign] + [sign (req.body-RSA)]
@@ -225,11 +252,11 @@ router.post("/3TBank/transaction", async (req, res) => {
 
 router.post("/BAOSON/customer", async (req, res) => {
 	const data = {
-		id: req.body.accountNumber,
+		Id: req.body.accountNumber,
 	};
 	let result = await axios({
 		method: "post",
-		url: "http://192.168.43.103:3000/banks/detail", // link ngan hang muon chuyen toi
+		url: "https://ptwncinternetbanking.herokuapp.com/banks/detail", // link ngan hang muon chuyen toi
 		data: data,
 		headers: {
 			nameBank: "SAPHASANBank",
@@ -288,6 +315,77 @@ router.post("/BAOSON/transaction", async (req, res) => {
 		return res.json(result.data);
 	}
 	return res.status(404).end();
+});
+
+//"Id": "2750027628572576"
+router.post("/detailPGP", async (req, res) => {
+	// console.log("body   ", req.body);
+	let data = {
+		id: req.body.Id,
+	};
+	let resinfo = await axios({
+		method: "post",
+		url: "https://ptwncinternetbanking.herokuapp.com/banks/detail", // link ngan hang muon chuyen toi
+		data: data,
+		headers: {
+			nameBank: "SAPHASANBank",
+			ts: moment().unix(),
+			sig: hash(moment().unix() + data.id + "secretkey"),
+		},
+	})
+		.then((result) => console.log(result))
+		.catch((err) => console.log(err));
+	console.log("nhan dcuo: ", resinfo.data);
+	if (!resinfo) {
+		return res.status(404).json({ info: false });
+	} else {
+		return res.status(201).send(resinfo.data);
+	}
+});
+
+// "Id": "2750027628572576",
+// 	"Amount": 50,
+// 	"Content":"nop tien"
+// "Fromacount": "123456789"
+router.post("/transferPGP", async (req, res) => {
+	let paymet = await banksModel.detail({ Iduser: req.tokenPayload.userId });
+	const privateKeyArmored = fs.readFileSync(
+		path.join(__dirname, "../public/myPGP/privateKeyPGP.asc"),
+		"utf8"
+	); // encrypted private key
+	const passphrase = `baoson123`; // what the private key is encrypted with
+	const {
+		keys: [privateKey],
+	} = await openpgp.key.readArmored(privateKeyArmored);
+	await privateKey.decrypt(passphrase);
+	const { data: cleartext } = await openpgp.sign({
+		message: openpgp.cleartext.fromText("NHÓM 6"), // CleartextMessage or Message object
+		privateKeys: [privateKey], // for signing
+	});
+	let data = {
+		Id: req.body.Id,
+		Amount: req.body.Amount,
+		Content: req.body.Content,
+		Fromacount: paymet[0].Id,
+	};
+	let result = await axios({
+		method: "post",
+		url: "https://ptwncinternetbanking.herokuapp.com/banks/transfers", // link ngan hang muon chuyen toi
+		data: {
+			...data,
+		},
+		headers: {
+			nameBank: "baoson",
+			ts: moment().unix(),
+			sig: hash(moment().unix() + data + "secretkey"),
+			sigpgp: JSON.stringify(cleartext),
+		},
+	});
+	if (!result) {
+		return res.status(404).end();
+	} else {
+		return res.json(result.data);
+	}
 });
 
 module.exports = router;
