@@ -10,8 +10,8 @@ const UserModel = require("../models/users.model");
 const { message } = require("openpgp");
 
 const keyOTP = "#@vevyveryOTPsecretkey@#";
-const fees = 10000;
-const minimumAmount = 50000;
+const fees = 1000;
+const minimumAmount = 1000;
 
 router.get("/history", async (req, res) => {
 	const { accountNumber } = req.user;

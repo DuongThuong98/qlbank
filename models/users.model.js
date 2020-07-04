@@ -14,6 +14,7 @@ const UserSchema = mongoose.Schema(
 	// 	"avatar": "12345",
 	// }
 	{
+		status: Boolean,
 		accountNumber: String, // Tai khoan ngan hang, chỉ số dài 7 kí tự. Vd: "4224201"
 		username: String,
 		passwordHash: String,
@@ -25,7 +26,7 @@ const UserSchema = mongoose.Schema(
 		permission: { type: Boolean, default: true },
 		refreshToken: {
 			type: String,
-			default: ""
+			default: "",
 		},
 		rdt: Date,
 		receivers: { type: Array, default: [] }, // [{accountNumber: String, bankId: String, savedName: String}]

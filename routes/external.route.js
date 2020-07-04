@@ -83,10 +83,11 @@ router.post("/customer", async (req, res) => {
 });
 
 router.post("/SAPHASANBank/customer", async (req, res) => {
+	// reqbody: "customerId": "1"
 	const { customerId } = req.body;
 	console.log(req.body);
 	const timeStamp = Date.now();
-	const partnerCode = "baoSon123"; // SAPHASANBank
+	const partnerCode = "baoSon123"; // SAPHASANBank || 3TBank || baoSon123
 	const bodyJson = { accountNumber: customerId };
 	const signature = timeStamp + bodyJson + md5("dungnoiaihet");
 	await axios
@@ -100,8 +101,40 @@ router.post("/SAPHASANBank/customer", async (req, res) => {
 		})
 		.then((result) => {
 			const { data } = result;
-			console.log(result);
 			res.json(result.data);
+		})
+		.catch((error) => {
+			res.json(error.response.data);
+		});
+});
+
+router.post("/SAPHASANBank/transaction", async (req, res) => {
+	const timeStamp = Date.now();
+	const partnerCode = "baoSon123";
+	const bodyJson = {
+		accountNumber: req.body.customerId,
+		amount: req.body.amount,
+	};
+	const signature = timeStamp + bodyJson + md5("dungnoiaihet");
+	const privateKey = new NodeRSA(
+		"-----BEGIN RSA PRIVATE KEY-----\n" +
+			"MIICXwIBAAKBgQCyceITLtFoy4KzMgmr6NEnvk1VBH7pRuyyg7IkXc3kBspKs9CIErm2eJtEtduIPQK+3AgiQW+fjL1dDMQr7ENZiGzWhEPoSbU348mjg1fxFDztFB4QiqAd7UUvj1kK2/UT+D0C6Sgc0O69C9lRGahPSAX+7ZArGIodtfuOKPenEwIDAQABAoGBAKU98CvzXte8HPvziiE3Jve2scXYs+0xUF6+tWgXtWFDKHCksqZPMMpYRPALt48hcDltZ9rQ3ZzRp0lTWRWTY4kmnjUm1W4E7uFmJJc7KySZJH9XNbvlOceVIKPIWjZvvQ93wov03G2ajdv/NC2BT57xQ+YTaMe3GQkJGTX7V/KBAkEA8TQmBdaExOBF7mrGKMrrrvYnErtZWN4dLdPK+ipfmeSM/oD25/UHfPHbh8tkHbt9vfz4PF/3NdAWcZiMNzAKPwJBAL1kLC/SM9NFfxCLfQrmP1qTASWs4IVsxeYU4+dUVcUwL0g4WlUgCjrVCFYomWen1wCbqCvlGpON9H7CLR7fpi0CQQDI3cXAXNoqXh6+orqtI/fLt3/okI6ifC5OiK7jUEBXF0b3dwynNJ3sxjksyAty2z2m5zEOjlh/vu/B3+j82IvfAkEAqlR2PQgCnicpkPqymePb5JzDclvZjYX3Medl1L4PaYndbElqTJbFPIYtujdHSGc1wZE8nUWuMjiARKRkKhkgfQJBAIqWxELwATG3541h/7MKI2tnTC0F3g7nTLJWtgIiqYfyw/jFdsVGWZUlJriyS6LxYh+0zMdRtdscw4iWEPJ2vM4=\n" +
+			"-----END RSA PRIVATE KEY-----"
+	);
+	const sign = privateKey.sign(bodyJson, "base64", "base64");
+	await axios
+		.post(`http://localhost:5000/api/external/transaction`, bodyJson, {
+			headers: {
+				ts: timeStamp,
+				partnerCode: partnerCode,
+				hashedSign: md5(signature),
+				sign: sign,
+			},
+		})
+		.then((result) => {
+			const { data } = result;
+			res.json(result.data);
+			// console.log(result);
 		})
 		.catch((error) => {
 			console.log(error);
@@ -118,6 +151,8 @@ router.post("/transaction", async (req, res) => {
 	// bodyjson: {sentId: _id, bankId: 1, accountNumber: _id, amount: 50000, content: "Tien an 2020", [timestamps]}
 
 	var con = confirm(req);
+
+	const partnerCode = req.get("partnerCode");
 
 	switch (con) {
 		case 1:
@@ -169,14 +204,32 @@ router.post("/transaction", async (req, res) => {
 					.send({ message: "Đã có lỗi xảy ra, vui lòng thử lại!" });
 			}
 			if (user) {
+				s;
 				const userNewBalance = user.balance + req.body.amount;
 				user.balance = userNewBalance;
 				await user
 					.save()
-					.then((newData) => {
+					.then(async (newData) => {
 						if (newData.balance === userNewBalance) {
 							const privateKey = new NodeRSA(process.SAPHASAN.RSA_PRIVATEKEY);
 							const sign = privateKey.sign("SAPHASANBank", "base64", "base64");
+
+							const transactionRecord = {
+								sentUserId: req.body.sentUserId,
+								sentBankId: partnerCode === "baoSon123" ? 2 : 1,
+								receivedUserId: req.body.accountNumber,
+								receivedBankId: 0,
+								isDebt: false,
+								isVerified: false,
+								isReceiverPaid: false,
+								amount: req.body.amount,
+								content: req.body.content,
+								signature: sign,
+							};
+
+							transactionRecord.isVerified = true;
+							await transactionRecord.save();
+
 							return res.json({ sign: sign, message: "Giao dịch thành công" });
 						}
 						return res.json({ message: "Không giao dịch được" });
@@ -319,54 +372,51 @@ router.post("/BAOSON/transaction", async (req, res) => {
 
 //"Id": "2750027628572576"
 router.post("/detailPGP", async (req, res) => {
-	// console.log("body   ", req.body);
 	let data = {
-		id: req.body.Id,
+		Id: req.body.Id,
 	};
+	console.log("ID: ", data.Id);
 	let resinfo = await axios({
 		method: "post",
 		url: "https://ptwncinternetbanking.herokuapp.com/banks/detail", // link ngan hang muon chuyen toi
 		data: data,
 		headers: {
-			nameBank: "SAPHASANBank",
+			nameBank: "baoson",
 			ts: moment().unix(),
-			sig: hash(moment().unix() + data.id + "secretkey"),
+			sig: hash(moment().unix() + data.Id + "secretkey"),
 		},
-	})
-		.then((result) => console.log(result))
-		.catch((err) => console.log(err));
+	});
 	console.log("nhan dcuo: ", resinfo.data);
 	if (!resinfo) {
 		return res.status(404).json({ info: false });
 	} else {
-		return res.status(201).send(resinfo.data);
+		return res.status(201).json(resinfo.data);
 	}
 });
 
 // "Id": "2750027628572576",
-// 	"Amount": 50,
+// 	"Amount":50000,
 // 	"Content":"nop tien"
 // "Fromacount": "123456789"
 router.post("/transferPGP", async (req, res) => {
-	let paymet = await banksModel.detail({ Iduser: req.tokenPayload.userId });
 	const privateKeyArmored = fs.readFileSync(
-		path.join(__dirname, "../public/myPGP/privateKeyPGP.asc"),
+		path.join(__dirname, "../config/PGPKeys/SAPHASAN-PGP-private.asc"),
 		"utf8"
 	); // encrypted private key
-	const passphrase = `baoson123`; // what the private key is encrypted with
+	const passphrase = `12345`; // what the private key is encrypted with
 	const {
 		keys: [privateKey],
-	} = await openpgp.key.readArmored(privateKeyArmored);
+	} = await openPgp.key.readArmored(privateKeyArmored);
 	await privateKey.decrypt(passphrase);
-	const { data: cleartext } = await openpgp.sign({
-		message: openpgp.cleartext.fromText("NHÓM 6"), // CleartextMessage or Message object
+	const { data: cleartext } = await openPgp.sign({
+		message: openPgp.cleartext.fromText("NHÓM 6"), // CleartextMessage or Message object
 		privateKeys: [privateKey], // for signing
 	});
 	let data = {
 		Id: req.body.Id,
 		Amount: req.body.Amount,
 		Content: req.body.Content,
-		Fromacount: paymet[0].Id,
+		Fromacount: req.body.Fromacount, // AccountNumber
 	};
 	let result = await axios({
 		method: "post",
@@ -375,7 +425,7 @@ router.post("/transferPGP", async (req, res) => {
 			...data,
 		},
 		headers: {
-			nameBank: "baoson",
+			nameBank: "SAPHASANBank",
 			ts: moment().unix(),
 			sig: hash(moment().unix() + data + "secretkey"),
 			sigpgp: JSON.stringify(cleartext),
