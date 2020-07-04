@@ -173,7 +173,7 @@ router.get("/all-users", async (req, res) => {
 });
 
 // ----- Get all employees with full information -----
-router.get("/all-employees", async (req, res) => {
+router.get("/employees", async (req, res) => {
 	const findingUsers = await usersModel
 		.find({ role: "employee" })
 		.then((result) => result)
@@ -188,6 +188,28 @@ router.get("/all-employees", async (req, res) => {
 		element.passwordHash = "";
 	});
 	return res.json(findingUsers);
+});
+
+// ----- Update status an employee info -----
+router.patch("/employees/recover/:accountNumber", async (req, res) => {
+	const { accountNumber } = req.params;
+	let user = await usersModel.findOne({ accountNumber: accountNumber });
+	user.status = true;
+
+	await user.save();
+
+	return res.send(user);
+});
+
+// ----- Delete an employee info -----
+router.delete("/employees/:accountNumber", async (req, res) => {
+	const { accountNumber } = req.params;
+	let user = await usersModel.findOne({ accountNumber: accountNumber });
+	user.status = false;
+
+	await user.save();
+
+	return res.send(user);
 });
 
 module.exports = router;
