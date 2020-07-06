@@ -4,19 +4,6 @@ const router = express.Router();
 const DebtNotificationModel = require("../models//debtNotification.model");
 const UserModel = require("../models/users.model");
 
-//GET
-router.get("/", async (req, res) => {
-	const debt = await DebtNotificationModel.find()
-		.then((data) => data)
-		.catch((err) => {
-			throw new Error(err);
-		});
-
-	debt.length !== 0
-		? res.json(debt)
-		: res.json({ message: "Không có nhắc nợ nào" });
-});
-
 router.get("/history", async (req, res) => {
 	const { accountNumber } = req.user;
 	let data = [];
@@ -81,7 +68,6 @@ router.delete("/record", async (req, res) => {
 		const debt = await DebtNotificationModel.findOne({ _id: debtId });
 		if (debt) {
 			let updatedBySentUser = 0;
-			console.log(debt.sentUserId, " vs ", req.user._id);
 			if (debt.sentUserId === req.user.accountNumber) {
 				updatedBySentUser = 1;
 			}
@@ -94,6 +80,11 @@ router.delete("/record", async (req, res) => {
 					status: "deleted",
 				}
 			);
+
+			// TODO: tạo Notification mới theo thông tin này
+
+			// #TODO
+
 			if (result) {
 				const data = await DebtNotificationModel.findOne({ _id: result._id });
 				if (data) {
@@ -107,34 +98,6 @@ router.delete("/record", async (req, res) => {
 		console.log("err: ", err);
 		return res.status(500).json({ message: "Đã có lỗi xảy ra." });
 	}
-});
-
-router.get("/debting", async (req, res) => {
-	const user = req.user;
-
-	const debt = await DebtNotificationModel.find({ sentUserId: user._id })
-		.then((data) => data)
-		.catch((err) => {
-			throw new Error(err);
-		});
-
-	debt.length !== 0
-		? res.json(debt)
-		: res.json({ message: "Không có nhắc nợ nào" });
-});
-
-router.get("/debted", async (req, res) => {
-	const user = req.user;
-
-	const debt = await DebtNotificationModel.find({ receivedUserId: user._id })
-		.then((data) => data)
-		.catch((err) => {
-			throw new Error(err);
-		});
-
-	debt.length !== 0
-		? res.json(debt)
-		: res.json({ message: "Không có nhắc nợ nào" });
 });
 
 // Thêm một debt record
@@ -177,6 +140,7 @@ router.post("/", (req, res) => {
 		});
 });
 
+// CHƯA DÙNG ROUTE NÀY
 router.patch("/", async (req, res) => {
 	//_id này là id của phiếu nhắc nhợ nha
 	const { _id, isDebt, content } = req.body;
