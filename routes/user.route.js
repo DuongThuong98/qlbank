@@ -50,7 +50,7 @@ router.post("/", async (req, res) => {
 	user
 		.save()
 		.then((userData) => {
-			res.status(200).send({ message: "Create new customer successfully!" });
+			res.status(200).send({ message: "Create new account successfully!" });
 		})
 		.catch((err) => {
 			console.log("error: ", err.message);
