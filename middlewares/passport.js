@@ -27,10 +27,15 @@ passport.use(
 								message: "Invalid username or password!",
 							});
 						}
+						if (rows.status === false) {
+							return done(null, false, {
+								message:
+									"Tài khoản đã bị vô hiệu hoá, hãy liên hệ với quản trị viên để biết thêm chi tiết!",
+							});
+						}
 						return done(null, rows);
 					});
 				}
-
 			});
 		}
 	)
@@ -51,7 +56,6 @@ passport.use(
 			secretOrKey: "secretKey",
 		},
 		function (jwtPayload, next) {
-			
 			return UsersModel.findOne(
 				{ username: jwtPayload.username },
 				(err, user) => {
