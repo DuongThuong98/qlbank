@@ -2,10 +2,11 @@ const express = require("express");
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const usersModel = require("../models/users.model");
-const helpers = require("../helpers/helpers");
+const { randomString } = require("../helpers/helpers");
 const bcrypt = require("bcryptjs");
 const { totp } = require("otplib");
 const nodemailer = require("nodemailer");
+const moment = require("moment");
 
 // const config = require('../config/default.json');
 
@@ -20,15 +21,19 @@ router.post("/login", (req, res) => {
 			const { username, role } = user;
 			console.log(user);
 
-			const temp = helpers.randomString(40);
-			const result = await usersModel.findOneAndUpdate(
+			const tempRefreshToken = randomString(40);
+			await usersModel.findOneAndUpdate(
 				{ username: username },
 				{
-					refreshToken: temp,
+					refreshToken: tempRefreshToken,
+					rdt: moment().format(),
 				}
 			);
 			const accessToken = generateAccessToken(username, role);
-			return res.json({ accessToken: accessToken });
+			return res.json({
+				accessToken: accessToken,
+				refreshToken: tempRefreshToken,
+			});
 		});
 	})(req, res);
 });
@@ -44,33 +49,35 @@ const generateAccessToken = (username, role) =>
 	);
 
 //refresh token
-router.post('/refresh', async (req, res) => {
+router.post("/refresh", async (req, res) => {
 	// req.body = {
 	//   accessToken,
 	//   refreshToken
 	// }
-	const user = req.user;
-	
-	jwt.verify(req.body.accessToken, "secretKey", { ignoreExpiration: true }, async function (err, payload) {
-		const { username, role } = payload;
-		// console.log(req.body);
-		
-		// console.log(payload)
-		const ret = await usersModel.findOne({ $and: [{ username: username }, { refreshToken: req.body.refreshToken }] });
-		console.log(ret)
-		if (ret) {
-			const accessToken = generateAccessToken(username, role);
-			res.status(200).json({ accessToken: accessToken });
+
+	await jwt.verify(
+		req.body.accessToken,
+		"secretKey",
+		{ ignoreExpiration: true },
+		async function (err, payload) {
+			if (err) res.status(400).json(err);
+			const { username, role } = payload;
+			// console.log(req.body);
+
+			console.log(payload);
+			const ret = await usersModel.findOne({
+				$and: [{ username: username }, { refreshToken: req.body.refreshToken }],
+			});
+			if (ret) {
+				const accessToken = generateAccessToken(username, role);
+				res.status(200).json({ accessToken: accessToken });
+			} else {
+				//throw new Error("Mã token sai");
+				res.status(400).json({ message: "Refresh không thành công" });
+			}
 		}
-		else {
-			//throw new Error("Mã token sai");
-			res.status(401).json({ message: "Refresh không thành công"});
-		}
-	})
+	);
 });
-
-
-
 
 // region forgot password
 router.post("/forgot-password", async (req, res) => {
