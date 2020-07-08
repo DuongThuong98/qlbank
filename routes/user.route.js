@@ -5,6 +5,7 @@ const { Validator } = require("node-input-validator");
 var validator = require("email-validator");
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
+const axios = require("axios");
 
 const router = express.Router();
 
@@ -300,7 +301,37 @@ router.patch("/change-password", async (req, res) => {
 	}
 });
 
-// ----- Get specific user info with his/her id -----
+router.get("/bank/:bankId/:id", async (req, res) => {
+	const userId = req.params.id;
+	const bankId = req.params.bankId;
+	let findingUser;
+	switch (bankId) {
+		case 0:
+			findingUser = await usersModel
+				.find({ accountNumber: id, role: "customer" })
+				.then((result) => result)
+				.catch((err) => {
+					throw new Error(err);
+				});
+			break;
+		case 1:
+			findingUser = await axios.get("");
+	}
+
+	if (findingUser.length > 0) {
+		const result = {
+			accountNumber: findingUser[0].accountNumber,
+			name: findingUser[0].name,
+			username: findingUser[0].username ? findingUser[0].username : "",
+		};
+		return res.json(result);
+	}
+	return res.status(400).json({
+		error: "Không có dữ liệu nào của người dùng!",
+	});
+});
+
+// ----- Get specific user info with his/her id in this Bank-----
 router.get("/:id", async (req, res) => {
 	const id = req.params.id;
 	const findingUser = await usersModel
