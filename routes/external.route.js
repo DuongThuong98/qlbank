@@ -10,6 +10,8 @@ const openPgp = require("openpgp");
 const fs = require("fs");
 const path = require("path");
 
+const externalController = require("../controllers/external.controllers");
+
 const router = express.Router();
 
 const confirm = (req) => {
@@ -123,7 +125,7 @@ router.post("/SAPHASANBank/transaction", async (req, res) => {
 	);
 	const sign = privateKey.sign(bodyJson, "base64", "base64");
 	await axios
-		.post(`http://localhost:5000/api/external/transaction`, bodyJson, {
+		.post(`/api/external/transaction`, bodyJson, {
 			headers: {
 				ts: timeStamp,
 				partnerCode: partnerCode,
@@ -245,6 +247,7 @@ router.post("/transaction", async (req, res) => {
 });
 
 router.post("/3TBank/customer", async (req, res) => {
+	// body: "accountNumber": "123456789"
 	if (!req.body.accountNumber || isNaN(+req.body.accountNumber))
 		return res.status(500).json({ message: "Please provide valid id." });
 
