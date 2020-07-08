@@ -45,7 +45,7 @@ const generateAccessToken = (username, role) =>
 			role: role,
 		},
 		"secretKey",
-		{ expiresIn: "10m" }
+		{ expiresIn: "10s" }
 	);
 
 //refresh token
@@ -55,6 +55,9 @@ router.post("/refresh", async (req, res) => {
 	//   refreshToken
 	// }
 
+	if (req.body.refreshToken === null || req.body.accessToken === null) {
+		return res.status(400).json("Invalid access-token or refresh-token");
+	}
 	await jwt.verify(
 		req.body.accessToken,
 		"secretKey",
