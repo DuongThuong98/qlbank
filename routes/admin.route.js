@@ -172,24 +172,6 @@ router.get("/all-users", async (req, res) => {
 	return res.json(findingUsers);
 });
 
-// ----- Get all users with full information -----
-router.post("/user/delete-refresh", async (req, res) => {
-	const { accountNumber } = req.body;
-	const result = await usersModel.findOneAndUpdate(
-		{ accountNumber: accountNumber },
-		{
-			refreshToken: "",
-		}
-	);
-	if (result) {
-		const data = await usersModel.findOne({
-			accountNumber: result.accountNumber,
-		});
-		if (data) {
-			return res.status(200).json({ message: "Xóa refresh token thành công" });
-		}
-	}
-});
 
 
 // ----- Get all employees with full information -----
