@@ -4,11 +4,12 @@ const NotificationSchema = mongoose.Schema(
 	{
 		notificationTitle: String,
 		notificationContent: String,
-		fromUserId: String, // ứng với AccountNumber, nếu bằng 0 là noti từ admin
+		fromUserId: String, // ứng với AccountNumber
 		fromBankId: Number,
-		toUserId: String, // ứng với AccountNumber, nếu bằng Null là gửi đến tất cả user trong nội bộ
+		toUserId: String, // ứng với AccountNumber
 		toBankId: Number,
 		isSent: Boolean, // notification is send or not
+		ts: Number,
 	},
 	{ timestamps: true }
 );

@@ -19,18 +19,21 @@ passport.use(
 				if (!rows || rows.length === 0) {
 					return done(null, false, {
 						message: "Invalid username or password!",
+						from: "LOGIN", //
 					});
 				} else {
 					bcrypt.compare(password, rows.passwordHash).then((res) => {
 						if (!res) {
 							return done(null, false, {
 								message: "Invalid username or password!",
+								from: "LOGIN", //
 							});
 						}
 						if (rows.status === false) {
 							return done(null, false, {
 								message:
 									"Tài khoản đã bị vô hiệu hoá, hãy liên hệ với quản trị viên để biết thêm chi tiết!",
+								from: "LOGIN", //
 							});
 						}
 						return done(null, rows);
