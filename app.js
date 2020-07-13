@@ -72,6 +72,11 @@ app.use(
 	passport.authenticate("jwt", { session: false }),
 	require("./routes/debtNotification.route")
 );
+app.use(
+	"/api/notification",
+	passport.authenticate("jwt", { session: false }),
+	require("./routes/notification.route")
+);
 
 app.use(
 	"/api/admin",
