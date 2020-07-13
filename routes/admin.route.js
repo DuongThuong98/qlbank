@@ -172,6 +172,8 @@ router.get("/all-users", async (req, res) => {
 	return res.json(findingUsers);
 });
 
+
+
 // ----- Get all employees with full information -----
 router.get("/employees", async (req, res) => {
 	const findingUsers = await usersModel

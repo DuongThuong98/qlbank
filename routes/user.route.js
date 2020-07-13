@@ -301,6 +301,25 @@ router.patch("/change-password", async (req, res) => {
 	}
 });
 
+// ----- Get all users with full information -----
+router.post("/delete-refresh", async (req, res) => {
+	const { user } = req;
+	const result = await usersModel.findOneAndUpdate(
+		{ accountNumber: user.accountNumber },
+		{
+			refreshToken: "",
+		}
+	);
+	if (result) {
+		const data = await usersModel.findOne({
+			accountNumber: result.accountNumber,
+		});
+		if (data) {
+			return res.status(200).json({ message: "Xóa refresh token thành công" });
+		}
+	}
+});
+
 router.get("/bank/:bankId/:id", async (req, res) => {
 	const userId = req.params.id;
 	const bankId = req.params.bankId;
