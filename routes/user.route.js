@@ -320,21 +320,23 @@ router.post("/delete-refresh", async (req, res) => {
 	}
 });
 
-router.get("/bank/:bankId/:id", async (req, res) => {
-	const userId = req.params.id;
-	const bankId = req.params.bankId;
-	let findingUser;
+router.get("/bank/:bankId/users/:id", async (req, res) => {
+	const userId = +req.params.id;
+	const bankId = +req.params.bankId;
+	let findingUser = [];
 	switch (bankId) {
 		case 0:
 			findingUser = await usersModel
-				.find({ accountNumber: id, role: "customer" })
+				.find({ accountNumber: userId, role: "customer" })
 				.then((result) => result)
 				.catch((err) => {
 					throw new Error(err);
 				});
 			break;
 		case 1:
-			findingUser = await axios.get("");
+			break;
+		case 2:
+			break;
 	}
 
 	if (findingUser.length > 0) {
@@ -345,7 +347,7 @@ router.get("/bank/:bankId/:id", async (req, res) => {
 		};
 		return res.json(result);
 	}
-	return res.status(400).json({
+	return res.json({
 		error: "Không có dữ liệu nào của người dùng!",
 	});
 });
@@ -368,7 +370,7 @@ router.get("/:id", async (req, res) => {
 		};
 		return res.json(result);
 	}
-	return res.status(400).json({
+	return res.json({
 		error: "Không có dữ liệu nào của người dùng!",
 	});
 });
