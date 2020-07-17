@@ -87,7 +87,9 @@ router.get("/history", async (req, res) => {
 		return false;
 	});
 	if (userIndex === -1) {
-		return res.status(404).json({ message: "Not found user" });
+		return res
+			.status(404)
+			.json({ message: "Not found user or this user has been online already" });
 	}
 
 	let loop = 0;
@@ -128,6 +130,7 @@ router.get("/history", async (req, res) => {
 							notificationContent: notifications[i].notificationContent,
 							notificationTitle: notifications[i].notificationTitle,
 							createdAt: notifications[i].createdAt,
+							ts: notifications[i].ts,
 						};
 
 						data.push(obj);
