@@ -15,7 +15,7 @@ const fees = 1000;
 const minimumAmount = 1000;
 const notificationTitleString = "Thông tin chuyển tiền";
 
-router.post("/:id", (req, res) => {
+router.post("/:id",async (req, res) => {
   //prepare data
   const { content } = req.body;
   const currentUser = req.user;

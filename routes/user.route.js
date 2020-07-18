@@ -6,6 +6,7 @@ var validator = require("email-validator");
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const axios = require("axios");
+const process = require("../config/process.config");
 
 const router = express.Router();
 
@@ -334,6 +335,28 @@ router.get("/bank/:bankId/users/:id", async (req, res) => {
 				});
 			break;
 		case 1:
+			{
+			  await axios
+				.post(
+				//`${ process.SAPHASAN.SERVER_URL}
+				`http://localhost:5000/
+				api/external/3TBank/customer`, {
+					accountNumber: userId,
+				})
+				.then((result) => {
+					console.log(result)
+				  if (result.data) {
+					  findingUser.push({
+						accountNumber: result.data.data.account,
+						name: result.data.data.fullName,
+						username: result.data.data.username ? result.data.data.username : "",
+					})
+					}
+				})
+				.catch((error) => {
+					throw new Error(error);
+				});
+			}
 			break;
 		case 2:
 			break;
