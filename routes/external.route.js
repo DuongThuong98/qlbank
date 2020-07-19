@@ -313,17 +313,18 @@ router.post("/BAOSON/customer", async (req, res) => {
   let result = await axios({
     method: "post",
     url: "https://ptwncinternetbanking.herokuapp.com/banks/detail", // link ngan hang muon chuyen toi
-    data: data,
+    data: { Id: req.body.accountNumber },
     headers: {
       nameBank: "SAPHASANBank",
       ts: moment().unix(),
-      sig: hash(moment().unix() + data.id + "secretkey"),
+      sig: hash(moment().unix() + data.Id + "secretkey"),
     },
   });
+  console.log(result);
   if (!result) {
     return res.status(404).json({ info: false });
   } else {
-    return res.status(201).json(result.data);
+    return res.status(200).json(result.data);
   }
 });
 
