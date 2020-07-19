@@ -5,6 +5,8 @@ const { Validator } = require("node-input-validator");
 var validator = require("email-validator");
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
+const moment = require("moment");
+const md5 = require("md5");
 const axios = require("axios");
 const process = require("../config/process.config");
 
@@ -336,26 +338,39 @@ router.get("/bank/:bankId/users/:id", async (req, res) => {
 			break;
 		case 1:
 			{
-			  await axios
-				.post(
-				//`${ process.SAPHASAN.SERVER_URL}
-				`http://localhost:5000/
-				api/external/3TBank/customer`, {
-					accountNumber: userId,
-				})
-				.then((result) => {
-					console.log(result)
-				  if (result.data) {
-					  findingUser.push({
-						accountNumber: result.data.data.account,
-						name: result.data.data.fullName,
-						username: result.data.data.username ? result.data.data.username : "",
+				// console.log("BODY1: ", req.body)
+				if (isNaN(userId))
+					return res.status(500).json({ message: "Please provide valid id." });
+
+				const timeStamp = moment().unix() * 1000;
+				const partnerCode = "SAPHASANBank"; // SAPHASANBank
+				const signature = timeStamp + md5("dungnoiaihet");
+
+				await axios
+					.get(`${process.Bank_3T.SERVER_URL}/api/v1/user`, {
+						headers: {
+							ts: timeStamp,
+							partnerCode: partnerCode,
+							hashedSign: md5(signature),
+						},
+						params: {
+							accountId: userId,
+						},
 					})
-					}
-				})
-				.catch((error) => {
-					throw new Error(error);
-				});
+					.then((result) => {
+						// console.log(result)
+						if (result.data) {
+							findingUser.push({
+								accountNumber: result.data.data.account,
+								name: result.data.data.fullName,
+								username: result.data.data.username ? result.data.data.username : "",
+							})
+						}
+					})
+					.catch((error) => {
+						throw new Error(error);
+					});
+			
 			}
 			break;
 		case 2:
