@@ -9,12 +9,15 @@ const config = require("../config/default.json");
 const TransactionModel = require("../models/transaction.model");
 const UserModel = require("../models/users.model");
 const Notification = require("../models/notification.model");
+const DebtNotification = require("../models/debtNotification.model");
+
 const { message } = require("openpgp");
 
 const keyOTP = "#@vevyveryOTPsecretkey@#";
 const fees = 1000;
 const minimumAmount = 1000;
-const notificationTitleString = "Thông tin chuyển tiền";
+let notificationTitle = "";
+let notificationContent = "";
 
 const { moneyFormatter } = require("../helpers/helpers");
 
@@ -200,7 +203,6 @@ router.post("/verify-code", async (req, res) => {
 
 	const transactionId = req.get("transactionId");
 	const debtId = req.get("debtId");
-	console.log(req.get("transactionId"));
 
 	if (transactionId == null) {
 		return res.status(400).json({ message: "Invalid transactionId!" });
@@ -246,29 +248,40 @@ router.post("/verify-code", async (req, res) => {
 
 	if (debtId != null) {
 		const debtRecord = await DebtNotification.findById({ _id: debtId });
-		if (debt === null) return res.status(404).json({ message: "Not found" });
+		if (debtRecord === null)
+			return res.status(404).json({ message: "Not found this Debt Id" });
 
 		debtRecord.updatedBySentUser = 0;
-		debtRecord.status = paid;
+		debtRecord.status = "paid";
 		await debtRecord.save();
+
+		tran.isDebt = true;
 	}
 
 	var messageNotify;
 	if (tran.isDebt) {
 		messageNotify = "Trả nợ";
+		notificationTitle = `${currentUser.name.toUpperCase()} đã trả nợ cho bạn`;
+		notificationContent = `Bạn được thanh toán nợ ${moneyFormatter.format(
+			tran.amount
+		)} bởi ${currentUser.name.toUpperCase()} vào lúc ${new Date(
+			tran.createdAt
+		)} với thông điệp "${tran.content}"`;
 	} else {
 		messageNotify = "Chuyển tiền";
+		notificationTitle = `${currentUser.name.toUpperCase()} đã chuyển tiền cho bạn`;
+		notificationContent = `Bạn nhận được ${moneyFormatter.format(
+			tran.amount
+		)} từ ${currentUser.name.toUpperCase()} trong ngày ${new Date(
+			tran.createdAt
+		)} với thông điệp "${tran.content}"`;
 	}
 
 	// Notification to user(include receiver and sender)
 	// when transaction created, add notification
 	let notifyModel = {
-		notificationTitle: `${currentUser.name.toUpperCase()} đã chuyển tiền cho bạn`,
-		notificationContent: `Bạn nhận được ${moneyFormatter.format(
-			tran.amount
-		)} từ ${currentUser.name.toUpperCase()} trong ngày ${new Date(
-			tran.createdAt
-		)} với thông điệp "${tran.content}"`,
+		notificationTitle: notificationTitle,
+		notificationContent: notificationContent,
 		fromUserId: tran.sentUserId,
 		fromBankId: tran.sentBankId,
 		toUserId: tran.receivedUserId,
