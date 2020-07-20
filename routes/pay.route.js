@@ -30,6 +30,8 @@ router.post("/:id", async (req, res) => {
 	if (currentUser.accountNumber !== debt.receivedUserId)
 		return res.status(403).json({ message: "Invalid user" });
 
+	// **TODO: Kiểm tra transactionId trong debt này đã có hay chưa? Chưa thì tạo thêm, còn có rồi thì lấy transaction này để update và lưu vào model debt
+
 	//add new transaction - debt pay
 	const model = {
 		sentUserId: debt.receivedUserId,
