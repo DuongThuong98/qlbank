@@ -338,7 +338,6 @@ router.get("/bank/:bankId/users/:id", async (req, res) => {
 			break;
 		case 1:
 			{
-				// console.log("BODY1: ", req.body)
 				if (isNaN(userId))
 					return res.status(500).json({ message: "Please provide valid id." });
 
@@ -363,14 +362,12 @@ router.get("/bank/:bankId/users/:id", async (req, res) => {
 							findingUser.push({
 								accountNumber: result.data.data.account,
 								name: result.data.data.fullName,
-								username: result.data.data.username ? result.data.data.username : "",
-							})
+								username: result.data.data.username
+									? result.data.data.username
+									: "",
+							});
 						}
-					})
-					.catch((error) => {
-						throw new Error(error);
 					});
-			
 			}
 			break;
 		case 2:
