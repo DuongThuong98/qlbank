@@ -248,6 +248,7 @@ router.post("/transaction", async (req, res) => {
 
 router.post("/3TBank/customer", async (req, res) => {
 	// body: "accountNumber": "123456789"
+	console.log("BODY1: ", req.body);
 	if (!req.body.accountNumber || isNaN(+req.body.accountNumber))
 		return res.status(500).json({ message: "Please provide valid id." });
 

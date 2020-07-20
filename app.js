@@ -26,8 +26,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 mongoose.Promise = global.Promise;
 // process.env.mongoURL ||
 mongoose
-	.connect(process.env.mongoURL || 
-		config.mongodb.url, {
+	.connect(process.env.mongoURL || config.mongodb.url, {
 		useNewUrlParser: true,
 		useUnifiedTopology: true,
 		useFindAndModify: false,
@@ -83,6 +82,11 @@ app.use(
 	"/api/admin",
 	passport.authenticate("jwt", { session: false }),
 	require("./routes/admin.route")
+);
+app.use(
+	"/api/pay",
+	passport.authenticate("jwt", { session: false }),
+	require("./routes/pay.route")
 );
 
 app.use((req, res, next) => {

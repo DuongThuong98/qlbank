@@ -5,7 +5,10 @@ const { Validator } = require("node-input-validator");
 var validator = require("email-validator");
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
+const moment = require("moment");
+const md5 = require("md5");
 const axios = require("axios");
+const process = require("../config/process.config");
 
 const router = express.Router();
 
@@ -320,21 +323,58 @@ router.post("/delete-refresh", async (req, res) => {
 	}
 });
 
-router.get("/bank/:bankId/:id", async (req, res) => {
-	const userId = req.params.id;
-	const bankId = req.params.bankId;
-	let findingUser;
+router.get("/bank/:bankId/users/:id", async (req, res) => {
+	const userId = +req.params.id;
+	const bankId = +req.params.bankId;
+	let findingUser = [];
 	switch (bankId) {
 		case 0:
 			findingUser = await usersModel
-				.find({ accountNumber: id, role: "customer" })
+				.find({ accountNumber: userId, role: "customer" })
 				.then((result) => result)
 				.catch((err) => {
 					throw new Error(err);
 				});
 			break;
 		case 1:
-			findingUser = await axios.get("");
+			{
+				// console.log("BODY1: ", req.body)
+				if (isNaN(userId))
+					return res.status(500).json({ message: "Please provide valid id." });
+
+				const timeStamp = moment().unix() * 1000;
+				const partnerCode = "SAPHASANBank"; // SAPHASANBank
+				const signature = timeStamp + md5("dungnoiaihet");
+
+				await axios
+					.get(`${process.Bank_3T.SERVER_URL}/api/v1/user`, {
+						headers: {
+							ts: timeStamp,
+							partnerCode: partnerCode,
+							hashedSign: md5(signature),
+						},
+						params: {
+							accountId: userId,
+						},
+					})
+					.then((result) => {
+						// console.log(result)
+						if (result.data) {
+							findingUser.push({
+								accountNumber: result.data.data.account,
+								name: result.data.data.fullName,
+								username: result.data.data.username ? result.data.data.username : "",
+							})
+						}
+					})
+					.catch((error) => {
+						throw new Error(error);
+					});
+			
+			}
+			break;
+		case 2:
+			break;
 	}
 
 	if (findingUser.length > 0) {
@@ -345,7 +385,7 @@ router.get("/bank/:bankId/:id", async (req, res) => {
 		};
 		return res.json(result);
 	}
-	return res.status(400).json({
+	return res.json({
 		error: "Không có dữ liệu nào của người dùng!",
 	});
 });
@@ -368,7 +408,7 @@ router.get("/:id", async (req, res) => {
 		};
 		return res.json(result);
 	}
-	return res.status(400).json({
+	return res.json({
 		error: "Không có dữ liệu nào của người dùng!",
 	});
 });
