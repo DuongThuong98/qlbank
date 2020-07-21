@@ -175,58 +175,7 @@ router.post("/:id/verify-code", async (req, res) => {
 		}
 	});
 
-	//send to current user
-	var transporter = nodemailer.createTransport(config.emailTransportOptions);
-	var content = "";
-	content += `<div>
-  <h2>You have been sent ${tran.amount} to ${receiverUser.username}</h2>
-  <h1>Type: ${messageNotify}</h1>
-  <p>Reason: ${tran.content}</p>
-  <p>Your balance: ${currentUser.balance}</p>
-  </div>  
-`;
-	var mailOptions = {
-		from: `huuthoigialai@gmail.com`,
-		to: currentUser.email,
-		subject: "Gửi Mã OTP",
-		html: content,
-	};
-	transporter.sendMail(mailOptions, function (error, info) {
-		if (error) {
-			console.log(error);
-			return res.status(400).json({ success: false });
-		} else {
-			console.log("Email sent: " + info.response);
-			return res.json({ success: true });
-		}
-	});
-
-	//send to receiver
-	var transporter2 = nodemailer.createTransport(config.emailTransportOptions);
-	var content2 = "";
-	content2 += `<div>
-  <h2>You have been paid ${tran.amount} from ${currentUser.username}</h2>
-  <h1>Reason: ${message}</h1>
-  <p>Your balance: ${receiverUser.balance}</p>
-  </div>  
-`;
-	var mailOptions2 = {
-		from: `huuthoigialai@gmail.com`,
-		to: currentUser.email,
-		subject: "Gửi Mã OTP",
-		html: content,
-	};
-	transporter2.sendMail(mailOptions2, function (error, info) {
-		if (error) {
-			console.log(error);
-			return res.status(400).json({ success: false });
-		} else {
-			console.log("Email sent: " + info.response);
-			return res.json({ success: true });
-		}
-	});
-
-	//updaate status trans
+	//update status trans
 	tran.isVerified = true;
 	await tran.save();
 
