@@ -298,35 +298,6 @@ router.post("/verify-code", async (req, res) => {
 		}
 	});
 
-	//send to sender
-	var transporter = nodemailer.createTransport(config.emailTransportOptions);
-
-	var content = "";
-	content += `<div>
-  <h2>You have been sent ${tran.amount} to ${receiverUser.username}</h2>
-  <h1>Type: ${messageNotify}</h1>
-  <p>Reason: ${tran.content}</p>
-  <p>Your balance: ${currentUser.balance}</p>
-  </div>  
-`;
-
-	var mailOptions = {
-		from: `huuthoigialai@gmail.com`,
-		to: currentUser.email,
-		subject: "Gửi Mã OTP",
-		html: content,
-	};
-
-	transporter.sendMail(mailOptions, function (error, info) {
-		if (error) {
-			console.log(error);
-			return res.status(400).json({ success: false });
-		} else {
-			console.log("Email sent: " + info.response);
-			return res.json({ success: true });
-		}
-	});
-
 	// Update transaction
 	tran.isVerified = true;
 	await tran.save();
