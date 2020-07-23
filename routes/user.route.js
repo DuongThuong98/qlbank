@@ -374,6 +374,30 @@ router.get("/bank/:bankId/users/:id", async (req, res) => {
 			}
 			break;
 		case 2:
+			{
+				const data = {
+					Id: userId,
+				  };
+				  let result = await axios({
+					method: "post",
+					url: "https://ptwncinternetbanking.herokuapp.com/banks/detail", // link ngan hang muon chuyen toi
+					data: data,
+					headers: {
+					  nameBank: "SAPHASANBank",
+					  ts: moment().unix(),
+					  sig: hash(moment().unix() + data.id + "secretkey"),
+					},
+				  });
+				  if (!result) {
+					
+				  } else {
+					findingUser.push({
+						accountNumber: userId,
+						name: result.result.FullName,
+						username: result.result.username ? result.result.username : "",
+					})
+				  }
+			}
 			break;
 	}
 
