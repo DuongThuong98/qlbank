@@ -5,6 +5,7 @@ const { Validator } = require("node-input-validator");
 var validator = require("email-validator");
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
+const hash = require("object-hash");
 const moment = require("moment");
 const md5 = require("md5");
 const axios = require("axios");

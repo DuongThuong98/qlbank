@@ -308,6 +308,7 @@ router.post("/3TBank/transaction", async (req, res) => {
 });
 
 router.post("/BAOSON/customer", async (req, res) => {
+  console.log("lala")
   const data = {
     Id: req.body.accountNumber,
   };
