@@ -197,6 +197,7 @@ router.post("/transaction", async (req, res) => {
 			message: "Sai chữ kí",
 		});
 	}
+
 	await usersModel.findOne(
 		{ accountNumber: req.body.accountNumber },
 		async (err, user) => {
@@ -206,7 +207,6 @@ router.post("/transaction", async (req, res) => {
 					.send({ message: "Đã có lỗi xảy ra, vui lòng thử lại!" });
 			}
 			if (user) {
-				s;
 				const userNewBalance = user.balance + req.body.amount;
 				user.balance = userNewBalance;
 				await user
@@ -214,7 +214,12 @@ router.post("/transaction", async (req, res) => {
 					.then(async (newData) => {
 						if (newData.balance === userNewBalance) {
 							const privateKey = new NodeRSA(process.SAPHASAN.RSA_PRIVATEKEY);
-							const sign = privateKey.sign("SAPHASANBank", "base64", "base64");
+							const message = `Người dùng ${req.body.accountNumber} từ ngân hàng SAPHASANBank đã nhận tiền từ người dùng ${req.body.sentUserId} từ ngân hàng ${partnerCode} số tiền ${req.body.amount}`;
+							const responseSignature = privateKey.sign(
+								message,
+								"base64",
+								"base64"
+							);
 
 							const transactionRecord = {
 								sentUserId: req.body.sentUserId,
@@ -222,17 +227,18 @@ router.post("/transaction", async (req, res) => {
 								receivedUserId: req.body.accountNumber,
 								receivedBankId: 0,
 								isDebt: false,
-								isVerified: false,
+								isVerified: true,
 								isReceiverPaid: false,
 								amount: req.body.amount,
 								content: req.body.content,
 								signature: sign,
 							};
-
-							transactionRecord.isVerified = true;
 							await transactionRecord.save();
 
-							return res.json({ sign: sign, message: "Giao dịch thành công" });
+							return res.json({
+								sign: responseSignature,
+								message: message,
+							});
 						}
 						return res.json({ message: "Không giao dịch được" });
 					})
