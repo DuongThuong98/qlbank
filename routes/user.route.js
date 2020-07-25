@@ -305,7 +305,6 @@ router.patch("/change-password", async (req, res) => {
 	}
 });
 
-// ----- Get all users with full information -----
 router.post("/delete-refresh", async (req, res) => {
 	const { user } = req;
 	const result = await usersModel.findOneAndUpdate(
@@ -339,7 +338,6 @@ router.get("/bank/:bankId/users/:id", async (req, res) => {
 			break;
 		case 1:
 			{
-				// console.log("BODY1: ", req.body)
 				if (isNaN(userId))
 					return res.status(500).json({ message: "Please provide valid id." });
 
@@ -359,19 +357,17 @@ router.get("/bank/:bankId/users/:id", async (req, res) => {
 						},
 					})
 					.then((result) => {
-						// console.log(result)
 						if (result.data) {
 							findingUser.push({
 								accountNumber: result.data.data.account,
 								name: result.data.data.fullName,
-								username: result.data.data.username ? result.data.data.username : "",
-							})
+								username: result.data.data.username
+									? result.data.data.username
+									: "",
+							});
 						}
 					})
-					.catch((error) => {
-						throw new Error(error);
-					});
-			
+					.catch((err) => console.log(err));
 			}
 			break;
 		case 2:
@@ -410,8 +406,8 @@ router.get("/bank/:bankId/users/:id", async (req, res) => {
 		};
 		return res.json(result);
 	}
-	return res.json({
-		error: "Không có dữ liệu nào của người dùng!",
+	return res.status(204).json({
+		message: "NO DATA",
 	});
 });
 
