@@ -373,7 +373,7 @@ router.get("/bank/:bankId/users/:id", async (req, res) => {
 		case 2:
 			{
 				const data = {
-					Id: userId,
+					Id: userId.toString(),
 				  };
 				  let result = await axios({
 					method: "post",
@@ -382,16 +382,17 @@ router.get("/bank/:bankId/users/:id", async (req, res) => {
 					headers: {
 					  nameBank: "SAPHASANBank",
 					  ts: moment().unix(),
-					  sig: hash(moment().unix() + data.id + "secretkey"),
+					  sig: hash(moment().unix() + data.Id + "secretkey"),
 					},
 				  });
 				  if (!result) {
 					
 				  } else {
+					  console.log(result)
 					findingUser.push({
 						accountNumber: userId,
-						name: result.result.FullName,
-						username: result.result.username ? result.result.username : "",
+						name: result.data.result.Fullname,
+						username: result.data.result.username ? result.data.result.username : "",
 					})
 				  }
 			}
@@ -400,7 +401,7 @@ router.get("/bank/:bankId/users/:id", async (req, res) => {
 
 	if (findingUser.length > 0) {
 		const result = {
-			accountNumber: findingUser[0].accountNumber,
+			accountNumber: findingUser[0].accountNumber.toString(),
 			name: findingUser[0].name,
 			username: findingUser[0].username ? findingUser[0].username : "",
 		};
