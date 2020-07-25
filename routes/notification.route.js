@@ -73,7 +73,7 @@ router.get("/history-all", async (req, res) => {
 // LONGPOLLING
 router.get("/history", async (req, res) => {
 	const { ts } = req.query;
-	const { accountNumber } = req.user;
+	const { accountNumber, username } = req.user;
 
 	// ** TODO: TẠO BẢNG USERS ONLINE => CHECK ĐÃ ONLINE THÌ KHÔNG CHẠY HÀM => TRẢ VỀ 500
 	// ** NẾU CHƯA ONLINE THÌ SET ONLINE VÀ CHẠY LONGPOLLING
@@ -87,7 +87,9 @@ router.get("/history", async (req, res) => {
 		return false;
 	});
 	if (userIndex === -1) {
-		return res.status(404).json({ message: "Not found user" });
+		return res
+			.status(404)
+			.json({ message: "Not found user or this user has been online already" });
 	}
 
 	let loop = 0;
@@ -128,6 +130,7 @@ router.get("/history", async (req, res) => {
 							notificationContent: notifications[i].notificationContent,
 							notificationTitle: notifications[i].notificationTitle,
 							createdAt: notifications[i].createdAt,
+							ts: notifications[i].ts,
 						};
 
 						data.push(obj);
@@ -137,7 +140,7 @@ router.get("/history", async (req, res) => {
 						.json({ return_ts: moment().unix(), data: data });
 				} else {
 					loop++;
-					console.log("loop: ", loop);
+					console.log(`user: ${username}, loop: ${loop}`);
 					if (loop < 4) {
 						setTimeout(fn, 2500);
 					} else {

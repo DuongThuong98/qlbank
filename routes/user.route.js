@@ -5,7 +5,11 @@ const { Validator } = require("node-input-validator");
 var validator = require("email-validator");
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
+const hash = require("object-hash");
+const moment = require("moment");
+const md5 = require("md5");
 const axios = require("axios");
+const process = require("../config/process.config");
 
 const router = express.Router();
 
@@ -301,7 +305,6 @@ router.patch("/change-password", async (req, res) => {
 	}
 });
 
-// ----- Get all users with full information -----
 router.post("/delete-refresh", async (req, res) => {
 	const { user } = req;
 	const result = await usersModel.findOneAndUpdate(
@@ -320,33 +323,92 @@ router.post("/delete-refresh", async (req, res) => {
 	}
 });
 
-router.get("/bank/:bankId/:id", async (req, res) => {
-	const userId = req.params.id;
-	const bankId = req.params.bankId;
-	let findingUser;
+router.get("/bank/:bankId/users/:id", async (req, res) => {
+	const userId = +req.params.id;
+	const bankId = +req.params.bankId;
+	let findingUser = [];
 	switch (bankId) {
 		case 0:
 			findingUser = await usersModel
-				.find({ accountNumber: id, role: "customer" })
+				.find({ accountNumber: userId, role: "customer" })
 				.then((result) => result)
 				.catch((err) => {
 					throw new Error(err);
 				});
 			break;
 		case 1:
-			findingUser = await axios.get("");
+			{
+				if (isNaN(userId))
+					return res.status(500).json({ message: "Please provide valid id." });
+
+				const timeStamp = moment().unix() * 1000;
+				const partnerCode = "SAPHASANBank"; // SAPHASANBank
+				const signature = timeStamp + md5("dungnoiaihet");
+
+				await axios
+					.get(`${process.Bank_3T.SERVER_URL}/api/v1/user`, {
+						headers: {
+							ts: timeStamp,
+							partnerCode: partnerCode,
+							hashedSign: md5(signature),
+						},
+						params: {
+							accountId: userId,
+						},
+					})
+					.then((result) => {
+						if (result.data) {
+							findingUser.push({
+								accountNumber: result.data.data.account,
+								name: result.data.data.fullName,
+								username: result.data.data.username
+									? result.data.data.username
+									: "",
+							});
+						}
+					})
+					.catch((err) => console.log(err));
+			}
+			break;
+		case 2:
+			{
+				const data = {
+					Id: userId.toString(),
+				  };
+				  let result = await axios({
+					method: "post",
+					url: "https://ptwncinternetbanking.herokuapp.com/banks/detail", // link ngan hang muon chuyen toi
+					data: data,
+					headers: {
+					  nameBank: "SAPHASANBank",
+					  ts: moment().unix(),
+					  sig: hash(moment().unix() + data.Id + "secretkey"),
+					},
+				  });
+				  if (!result) {
+					
+				  } else {
+					  console.log(result)
+					findingUser.push({
+						accountNumber: userId,
+						name: result.data.result.Fullname,
+						username: result.data.result.username ? result.data.result.username : "",
+					})
+				  }
+			}
+			break;
 	}
 
 	if (findingUser.length > 0) {
 		const result = {
-			accountNumber: findingUser[0].accountNumber,
+			accountNumber: findingUser[0].accountNumber.toString(),
 			name: findingUser[0].name,
 			username: findingUser[0].username ? findingUser[0].username : "",
 		};
 		return res.json(result);
 	}
-	return res.status(400).json({
-		error: "Không có dữ liệu nào của người dùng!",
+	return res.status(204).json({
+		message: "NO DATA",
 	});
 });
 
@@ -368,7 +430,7 @@ router.get("/:id", async (req, res) => {
 		};
 		return res.json(result);
 	}
-	return res.status(400).json({
+	return res.json({
 		error: "Không có dữ liệu nào của người dùng!",
 	});
 });
