@@ -290,7 +290,7 @@ router.post("/verify-code", async (req, res) => {
 		ts: moment().unix(),
 	};
 
-	Notification.create(notifyModel, (err, notify) => {
+	await Notification.create(notifyModel, (err, notify) => {
 		if (err) {
 			return res.status(400).json({ message: err });
 		} else {
@@ -301,6 +301,8 @@ router.post("/verify-code", async (req, res) => {
 	// Update transaction
 	tran.isVerified = true;
 	await tran.save();
+
+	res.status(200).json({ message: "Giao dịch thành công!" });
 });
 
 //should the transaction be updated?
