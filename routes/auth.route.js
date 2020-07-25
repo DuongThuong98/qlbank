@@ -117,15 +117,18 @@ router.post("/forgot-password", async (req, res) => {
 
 			var content = "";
 			content += `<div>
-        <h2>Use the code below to reset password!</h2>
-				<h1> ${code}</h1>
-				<p>This code will be expired after 5 minutes!</p>
+					<h2>Hi, ${user.name.toUpperCase()}!</h2>
+					<p>You recently requested to reset your password for your SAPHASAN Bank account. Here is your OTP code to reset:</p>
+					<h1> ${code}</h1>
+					<p>If you did not request a password reset, please ignore this email! This password reset is only valid for the next 5 minutes.</p>
+					<p>Thanks,</p>
+					<p>SAPHASAN Bank Team.</p>
 				</div>`;
 
 			var mailOptions = {
 				from: `huuthoigialai@gmail.com`,
 				to: email,
-				subject: "Gửi Mã OTP",
+				subject: "SAPHASAN Bank Password Reset",
 				html: content,
 			};
 
@@ -141,28 +144,29 @@ router.post("/forgot-password", async (req, res) => {
 		});
 });
 
-router.post("/verify-forgot-password", async (req, res) => {
+router.post("/verify-forgot-password", (req, res) => {
 	const { code, newPassword, email } = req.body;
-	usersModel.findOne({ email: email }).exec((err, user) => {
+
+	usersModel.findOne({ email: email }).exec(async (err, user) => {
 		if (err) return res.status(500).send({ message: err });
 		if (!user) return res.status(404).send({ message: "User Not found." });
-	});
-
-	const isValid = totp.check(code, email);
-	if (isValid) {
-		newPasswordHash = bcrypt.hashSync(newPassword, 10);
-		const result = await usersModel.findOneAndUpdate(
-			{ email },
-			{ passwordHash: newPasswordHash }
-		);
-		if (result) {
-			res.json({ success: true, message: "Reset password success" });
+		const isValid = totp.check(code, email);
+		console.log("isValid: ", isValid, email);
+		if (isValid) {
+			newPasswordHash = bcrypt.hashSync(newPassword, 10);
+			const result = await usersModel.findOneAndUpdate(
+				{ email },
+				{ passwordHash: newPasswordHash }
+			);
+			if (result) {
+				return res.json({ success: true, message: "Reset password success" });
+			} else {
+				return res.status(400).json({ message: "Authentication error!" });
+			}
 		} else {
-			res.status(401).json({ message: "Authentication error!" });
+			return res.status(400).json({ message: "Code is invalid or expired!" });
 		}
-	} else {
-		res.status(401).json({ message: "Code is invalid or expired!" });
-	}
+	});
 });
 
 //end region forgot password
