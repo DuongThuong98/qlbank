@@ -438,6 +438,7 @@ router.post("/transferPGP", async (req, res) => {
 	if (!result) {
 		return res.status(404).end();
 	} else {
+		console.log(result);
 		return res.json(result.data);
 	}
 });
