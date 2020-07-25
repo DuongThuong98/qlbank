@@ -212,8 +212,6 @@ router.post("/verify-code", async (req, res) => {
 
 	const tran = await TransactionModel.findById({ _id: transactionId });
 
-	console.log(tran);
-
 	if (tran == null)
 		return res.status(404).json({ message: "Not found transaction!" });
 
@@ -223,11 +221,11 @@ router.post("/verify-code", async (req, res) => {
 	if (receiverUser == null)
 		return res.status(404).json({ message: "Receiver not found" });
 
+	//kiem tra nguoi  gui co du tien gui hay khong ||
 	if (currentUser.balance - tran.amount <= minimumAmount) {
 		return res.status(400).json({ message: "Not enough money" });
 	}
 
-	//kiem tra nguoi  gui co du tien gui hay khong ||
 	if (tran.isReceiverPaid) {
 		receiverUser.balance = receiverUser.balance + tran.amount - fees;
 		await receiverUser.save();
@@ -290,7 +288,7 @@ router.post("/verify-code", async (req, res) => {
 		ts: moment().unix(),
 	};
 
-	Notification.create(notifyModel, (err, notify) => {
+	await Notification.create(notifyModel, (err, notify) => {
 		if (err) {
 			return res.status(400).json({ message: err });
 		} else {
@@ -301,6 +299,8 @@ router.post("/verify-code", async (req, res) => {
 	// Update transaction
 	tran.isVerified = true;
 	await tran.save();
+
+	res.status(200).json({ message: "Giao dịch thành công!" });
 });
 
 //should the transaction be updated?

@@ -10,6 +10,8 @@ const UserModel = require("../models/users.model");
 const { message } = require("openpgp");
 const DebtNotification = require("../models/debtNotification.model");
 
+const { moneyFormatter } = require("../helpers/helpers");
+
 const keyOTP = "#@vevyveryOTPsecretkey@#";
 const fees = 1000;
 const minimumAmount = 1000;
@@ -87,15 +89,19 @@ router.post("/:id", async (req, res) => {
         );
         var content = "";
         content += `<div>
-        <h2>Use the code below to verify information </h2>
-				<h1> ${code}</h1>
-				<p>This code will be expired after 5 minutes!</p>
-				</div>  
-		`;
+            <h2>Hi, ${currentUser.name.toUpperCase()}!</h2>
+            <p>You recently requested to make your new transaction in SAPHASAN Bank. You're about to send <b>${moneyFormatter.format(
+              tran.amount
+            )}</b>. Here is your OTP code to complete this transaction:</p>
+            <h1> ${code}</h1>
+            <p>If you didn't ask for to verify this transaction, you can ignore this email and change your password immediately.</p>
+            <p>Thanks,</p>
+            <p>SAPHASAN Bank Team.</p>
+          </div>`;
         var mailOptions = {
           from: `huuthoigialai@gmail.com`,
           to: currentUser.email,
-          subject: "Gửi Mã OTP",
+          subject: "[SAPHASANBank] Verify transaction request",
           html: content,
         };
         transporter.sendMail(mailOptions, function (error, info) {
