@@ -212,8 +212,6 @@ router.post("/verify-code", async (req, res) => {
 
 	const tran = await TransactionModel.findById({ _id: transactionId });
 
-	console.log(tran);
-
 	if (tran == null)
 		return res.status(404).json({ message: "Not found transaction!" });
 
@@ -223,11 +221,11 @@ router.post("/verify-code", async (req, res) => {
 	if (receiverUser == null)
 		return res.status(404).json({ message: "Receiver not found" });
 
+	//kiem tra nguoi  gui co du tien gui hay khong ||
 	if (currentUser.balance - tran.amount <= minimumAmount) {
 		return res.status(400).json({ message: "Not enough money" });
 	}
 
-	//kiem tra nguoi  gui co du tien gui hay khong ||
 	if (tran.isReceiverPaid) {
 		receiverUser.balance = receiverUser.balance + tran.amount - fees;
 		await receiverUser.save();
