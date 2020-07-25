@@ -5,6 +5,7 @@ const { Validator } = require("node-input-validator");
 var validator = require("email-validator");
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
+const hash = require("object-hash");
 const moment = require("moment");
 const md5 = require("md5");
 const axios = require("axios");
@@ -370,12 +371,37 @@ router.get("/bank/:bankId/users/:id", async (req, res) => {
 			}
 			break;
 		case 2:
+			{
+				const data = {
+					Id: userId.toString(),
+				  };
+				  let result = await axios({
+					method: "post",
+					url: "https://ptwncinternetbanking.herokuapp.com/banks/detail", // link ngan hang muon chuyen toi
+					data: data,
+					headers: {
+					  nameBank: "SAPHASANBank",
+					  ts: moment().unix(),
+					  sig: hash(moment().unix() + data.Id + "secretkey"),
+					},
+				  });
+				  if (!result) {
+					
+				  } else {
+					  console.log(result)
+					findingUser.push({
+						accountNumber: userId,
+						name: result.data.result.Fullname,
+						username: result.data.result.username ? result.data.result.username : "",
+					})
+				  }
+			}
 			break;
 	}
 
 	if (findingUser.length > 0) {
 		const result = {
-			accountNumber: findingUser[0].accountNumber,
+			accountNumber: findingUser[0].accountNumber.toString(),
 			name: findingUser[0].name,
 			username: findingUser[0].username ? findingUser[0].username : "",
 		};
