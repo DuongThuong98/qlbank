@@ -49,6 +49,48 @@ router.post("/:id", async (req, res) => {
     }
     transaction.feedbackContent = content;
     await transaction.save();
+
+    //create successfully => create otp code
+    totp.options = { step: 300, digits: 8 };
+    var key = keyOTP + currentUser.id;
+    const code = totp.generate(key);
+
+    //update transaction
+    transaction.transactionIdCode = md5(tran._id + code);
+    transaction.code = code;
+    await transaction.save();
+
+    //send mail
+    var transporter = nodemailer.createTransport(config.emailTransportOptions);
+    var content = "";
+    content += `<div>
+        <h2>Hi, ${currentUser.name.toUpperCase()}!</h2>
+        <p>You recently requested to make your new transaction in SAPHASAN Bank. You're about to send <b>${moneyFormatter.format(
+          transaction.amount
+        )}</b>. Here is your OTP code to complete this transaction:</p>
+        <h1> ${code}</h1>
+        <p>If you didn't ask for to verify this transaction, you can ignore this email and change your password immediately.</p>
+        <p>Thanks,</p>
+        <p>SAPHASAN Bank Team.</p>
+      </div>`;
+    var mailOptions = {
+      from: `huuthoigialai@gmail.com`,
+      to: currentUser.email,
+      subject: "[SAPHASANBank] Verify transaction request",
+      html: content,
+    };
+    transporter.sendMail(mailOptions, function (error, info) {
+      if (error) {
+        console.log(error);
+        return res.status(400).json({ message: "Không thể gửi mail" });
+      } else {
+        console.log("Email sent: " + info.response);
+        return res.json({
+          message: `Gửi Otp thành công ${code}`,
+          data: { transactionId: tran._id, createdAt: tran.createdAt },
+        });
+      }
+    });
   } else {
     //add new transaction - debt pay
     const model = {
