@@ -113,6 +113,7 @@ router.get("/", async (req, res) => {
 router.post("/", (req, res) => {
 	const {
 		receivedUserId,
+		receivedUserName,
 		receivedBankId,
 		isDebt,
 		isReceiverPaid,
@@ -128,8 +129,10 @@ router.post("/", (req, res) => {
 	//add new transaction
 	const model = {
 		sentUserId: currentUser.accountNumber,
+		sentUserName: currentUser.name,
 		sentBankId: currentUser.bankId ? currentUser.bankId : 0,
 		receivedUserId: receivedUserId,
+		receivedUserName: receivedUserName,
 		receivedBankId: receivedBankId,
 		isDebt: isDebt,
 		isVerified: false,

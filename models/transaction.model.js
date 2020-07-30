@@ -6,6 +6,9 @@ const TransactionSchema = mongoose.Schema(
 			type: String,
 			required: true,
 		},
+		sentUserName: {
+			type: String,
+		},
 		sentBankId: {
 			type: Number,
 			required: true,
@@ -13,6 +16,9 @@ const TransactionSchema = mongoose.Schema(
 		receivedUserId: {
 			type: String,
 			required: true,
+		},
+		receivedUserName: {
+			type: String,
 		},
 		receivedBankId: {
 			type: Number,

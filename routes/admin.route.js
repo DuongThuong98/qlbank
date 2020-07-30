@@ -56,13 +56,15 @@ router.post("/user-history-transactions", async (req, res) => {
 					transactionId: trans[i]._id,
 					sentUserId: trans[i].sentUserId,
 					sentUserName:
-						users[indexSentUser] != null ? users[indexSentUser].name : null,
+						trans[i].sentUserName ||
+						(users[indexSentUser] != null ? users[indexSentUser].name : null),
 					sentBankId: trans[i].sentBankId,
 					receivedUserId: trans[i].receivedUserId,
 					receivedUserName:
-						users[indexReceivedUser] != null
+						trans[i].receivedUserName ||
+						(users[indexReceivedUser] != null
 							? users[indexReceivedUser].name
-							: null,
+							: null),
 					receivedBankId: trans[i].receivedBankId,
 					isDebt: trans[i].isDebt,
 					isReceiverPaid: trans[i].isReceiverPaid,
@@ -82,14 +84,22 @@ router.post("/user-history-transactions", async (req, res) => {
 
 //current user is ADMIN
 router.post("/deposit", async (req, res) => {
-	const { receivedUserId, receivedBankId, amount, content } = req.body;
+	const {
+		receivedUserId,
+		receivedBankId,
+		receivedUserName,
+		amount,
+		content,
+	} = req.body;
 	const currentUser = req.user;
 
 	//model
 	const model = {
 		sentUserId: currentUser.accountNumber,
+		sentUserName: currentUser.name,
 		sentBankId: currentUser.bankId ? currentUser.bankId : 0,
 		receivedUserId: receivedUserId,
+		receivedUserName: receivedUserName,
 		receivedBankId: receivedBankId,
 		isDebt: false,
 		isVerified: false,
@@ -171,8 +181,6 @@ router.get("/all-users", async (req, res) => {
 	});
 	return res.json(findingUsers);
 });
-
-
 
 // ----- Get all employees with full information -----
 router.get("/employees", async (req, res) => {
