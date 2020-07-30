@@ -56,6 +56,7 @@ router.get("/history", async (req, res) => {
 					status: debts[i].status,
 					amount: debts[i].amount,
 					debtContent: debts[i].debtContent,
+					transactionId: debts[i].transactionId || "",
 					createdAt: debts[i].createdAt,
 				};
 
