@@ -62,7 +62,7 @@ router.post("/:id", async (req, res) => {
 
     //send mail
     var transporter = nodemailer.createTransport(config.emailTransportOptions);
-    var content = "";
+    let content = "";
     content += `<div>
         <h2>Hi, ${currentUser.name.toUpperCase()}!</h2>
         <p>You recently requested to make your new transaction in SAPHASAN Bank. You're about to send <b>${moneyFormatter.format(
