@@ -228,7 +228,7 @@ router.get("/transactions", async (req, res) => {
 	let sumMoney = 0;
 
 	var transactions = await TransactionModel.find({
-		$where: "sentBankId != receivedBankId",
+		$where: "this.sentBankId != this.receivedBankId",
 	});
 	if (transactions != null && transactions.length > 0) {
 		for (let i = 0; i < transactions.length; i++) {
