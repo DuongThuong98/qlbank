@@ -5,6 +5,9 @@ const nodemailer = require("nodemailer");
 const md5 = require("md5");
 const moment = require("moment");
 const config = require("../config/default.json");
+const NodeRSA = require("node-rsa");
+const process = require("../config/process.config");
+const axios = require("axios");
 
 const TransactionModel = require("../models/transaction.model");
 const UserModel = require("../models/users.model");
@@ -207,16 +210,148 @@ router.post("/verify-code", async (req, res) => {
 	const transactionId = req.get("transactionId");
 	const debtId = req.get("debtId");
 
+
+
+	if (transactionId == null) {
+		return res.status(400).json({ message: "Invalid transactionId!" });
+	}
+
+	const isValid = totp.check(code, keyOTP + currentUser._id);
+	if (!isValid) return res.status(400).json({ message: "Invalid code!" });
+
+	const tran = await TransactionModel.findById({ _id: transactionId });
+
+	if (tran == null)
+		return res.status(404).json({ message: "Not found transaction!" });
+
+	//kiem tra nguoi  gui co du tien gui hay khong ||
+	if (currentUser.balance - tran.amount <= minimumAmount) {
+		return res.status(400).json({ message: "Not enough money" });
+	}
+
 	//Xác định là gửi cho ngân hàng nào (nội bộ hay khác)
 	switch (tran.receivedBankId) {
 		case 0://Ngân hàng nội bộ
 			{
+				var receiverUser = await UserModel.findOne({
+					accountNumber: tran.receivedUserId,
+				});
+				if (receiverUser == null)
+					return res.status(404).json({ message: "Receiver not found" });
+				//NỘI NGÂN HÀNG - START
+				//chỗ này cần kiểm tra thêm cái phí
+				if (tran.isReceiverPaid) {
+					receiverUser.balance = receiverUser.balance + tran.amount - fees;
+					await receiverUser.save();
+
+					currentUser.balance = currentUser.balance - tran.amount;
+					await currentUser.save();
+				} else {
+					//kiem tra xem so du sua khi chuyen co lon hon 1000 ko?
+					if (currentUser.balance - tran.amount - fees <= minimumAmount) {
+						return res.status(400).json({ message: "Not enough money" });
+					}
+					receiverUser.balance = receiverUser.balance + tran.amount;
+					await receiverUser.save();
+
+					currentUser.balance = currentUser.balance - tran.amount - fees;
+					await currentUser.save();
+				}
+
+				if (debtId != null) {
+					const debtRecord = await DebtNotification.findById({ _id: debtId });
+					if (debtRecord === null)
+						return res.status(404).json({ message: "Not found this Debt Id" });
+
+					debtRecord.updatedBySentUser = 0;
+					debtRecord.status = "paid";
+					await debtRecord.save();
+
+					tran.isDebt = true;
+				}
+
+				// END
+
+				//Tạo notification
+
+				let messageNotify;
+				if (tran.isDebt) {
+					messageNotify = "Trả nợ";
+					notificationTitle = `${currentUser.name.toUpperCase()} đã trả nợ cho bạn`;
+					notificationContent = `Bạn được thanh toán nợ ${moneyFormatter.format(
+						tran.amount
+					)} bởi ${currentUser.name.toUpperCase()} vào lúc ${new Date(
+						tran.createdAt
+					)} với thông điệp "${tran.content}"`;
+				} else {
+					messageNotify = "Chuyển tiền";
+					notificationTitle = `${currentUser.name.toUpperCase()} đã chuyển tiền cho bạn`;
+					notificationContent = `Bạn nhận được ${moneyFormatter.format(
+						tran.amount
+					)} từ ${currentUser.name.toUpperCase()} trong ngày ${new Date(
+						tran.createdAt
+					)} với thông điệp "${tran.content}"`;
+				}
+
+				// Notification to user(include receiver and sender)
+				// when transaction created, add notification
+				let notifyModel = {
+					notificationTitle: notificationTitle,
+					notificationContent: notificationContent,
+					fromUserId: tran.sentUserId,
+					fromBankId: tran.sentBankId,
+					toUserId: tran.receivedUserId,
+					toBankId: tran.receivedBankId,
+					isSent: false,
+					ts: moment().unix(),
+				};
+
+				await Notification.create(notifyModel, (err, notify) => {
+					if (err) {
+						return res.status(400).json({ message: err });
+					} else {
+						console.log(notify);
+					}
+				});
 
 			}
 			break;
 		case 1: //Ngần hàng của Tiền
 			{
+				const timeStamp = moment().unix() * 1000;
+				const partnerCode = "SAPHASANBank";
+				const bodyJson = {
+					accountNumber: tran.receivedUserId.toString(),
+					cost: +tran.amount,
+				};
+				const signature = bodyJson + timeStamp + md5("dungnoiaihet");
+				const privateKey = new NodeRSA(process.SAPHASAN.RSA_PRIVATEKEY);
+				const sign = privateKey.sign(bodyJson, "base64", "base64");
+				await axios
+					.post(
+						`${process.Bank_3T.SERVER_URL}/api/v1/user/change-balance`,
+						bodyJson,
+						{
+							headers: {
+								ts: timeStamp,
+								partnerCode: partnerCode,
+								hashedSign: md5(signature),
+								sign: sign,
+							},
+						}
+					)
+					.then(async (result) => {
+						if (result.data);
+						{
+							currentUser.balance = currentUser.balance - tran.amount - fees;
+							await currentUser.save();
 
+							console.log(result.data);
+						}
+					})
+					.catch((error) => {
+						res.status(400).json(error);
+					});
 			}
 			break;
 		case 2: //Ngân hàng của Sơn
@@ -229,102 +364,6 @@ router.post("/verify-code", async (req, res) => {
 	}
 
 
-	if (transactionId == null) {
-		return res.status(400).json({ message: "Invalid transactionId!" });
-	}
-	const isValid = totp.check(code, keyOTP + currentUser._id);
-	if (!isValid) return res.status(400).json({ message: "Invalid code!" });
-
-	const tran = await TransactionModel.findById({ _id: transactionId });
-
-	if (tran == null)
-		return res.status(404).json({ message: "Not found transaction!" });
-
-	var receiverUser = await UserModel.findOne({
-		accountNumber: tran.receivedUserId,
-	});
-	if (receiverUser == null)
-		return res.status(404).json({ message: "Receiver not found" });
-
-	//kiem tra nguoi  gui co du tien gui hay khong ||
-	if (currentUser.balance - tran.amount <= minimumAmount) {
-		return res.status(400).json({ message: "Not enough money" });
-	}
-
-
-	//NỘI NGÂN HÀNG - START
-	//chỗ này cần kiểm tra thêm cái phí
-	if (tran.isReceiverPaid) {
-		receiverUser.balance = receiverUser.balance + tran.amount - fees;
-		await receiverUser.save();
-
-		currentUser.balance = currentUser.balance - tran.amount;
-		await currentUser.save();
-	} else {
-		//kiem tra xem so du sua khi chuyen co lon hon 1000 ko?
-		if (currentUser.balance - tran.amount - fees <= minimumAmount) {
-			return res.status(400).json({ message: "Not enough money" });
-		}
-		receiverUser.balance = receiverUser.balance + tran.amount;
-		await receiverUser.save();
-
-		currentUser.balance = currentUser.balance - tran.amount - fees;
-		await currentUser.save();
-	}
-
-	if (debtId != null) {
-		const debtRecord = await DebtNotification.findById({ _id: debtId });
-		if (debtRecord === null)
-			return res.status(404).json({ message: "Not found this Debt Id" });
-
-		debtRecord.updatedBySentUser = 0;
-		debtRecord.status = "paid";
-		await debtRecord.save();
-
-		tran.isDebt = true;
-	}
-
-	// END
-
-	var messageNotify;
-	if (tran.isDebt) {
-		messageNotify = "Trả nợ";
-		notificationTitle = `${currentUser.name.toUpperCase()} đã trả nợ cho bạn`;
-		notificationContent = `Bạn được thanh toán nợ ${moneyFormatter.format(
-			tran.amount
-		)} bởi ${currentUser.name.toUpperCase()} vào lúc ${new Date(
-			tran.createdAt
-		)} với thông điệp "${tran.content}"`;
-	} else {
-		messageNotify = "Chuyển tiền";
-		notificationTitle = `${currentUser.name.toUpperCase()} đã chuyển tiền cho bạn`;
-		notificationContent = `Bạn nhận được ${moneyFormatter.format(
-			tran.amount
-		)} từ ${currentUser.name.toUpperCase()} trong ngày ${new Date(
-			tran.createdAt
-		)} với thông điệp "${tran.content}"`;
-	}
-
-	// Notification to user(include receiver and sender)
-	// when transaction created, add notification
-	let notifyModel = {
-		notificationTitle: notificationTitle,
-		notificationContent: notificationContent,
-		fromUserId: tran.sentUserId,
-		fromBankId: tran.sentBankId,
-		toUserId: tran.receivedUserId,
-		toBankId: tran.receivedBankId,
-		isSent: false,
-		ts: moment().unix(),
-	};
-
-	await Notification.create(notifyModel, (err, notify) => {
-		if (err) {
-			return res.status(400).json({ message: err });
-		} else {
-			console.log(notify);
-		}
-	});
 
 	// Update transaction
 	tran.isVerified = true;
