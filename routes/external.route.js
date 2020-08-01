@@ -116,6 +116,8 @@ router.post("/SAPHASANBank/transaction", async (req, res) => {
 	const bodyJson = {
 		accountNumber: req.body.customerId,
 		amount: req.body.amount,
+		content: req.body.content,
+		amount: req.body.amount,
 	};
 	const signature = timeStamp + bodyJson + md5("dungnoiaihet");
 	const privateKey = new NodeRSA(
@@ -223,8 +225,10 @@ router.post("/transaction", async (req, res) => {
 
 							const transactionRecord = {
 								sentUserId: req.body.sentUserId,
+								sentUserName: req.body.sentUserName,
 								sentBankId: partnerCode === "baoSon123" ? 2 : 1,
 								receivedUserId: req.body.accountNumber,
+								receivedUserName: user.name,
 								receivedBankId: 0,
 								isDebt: false,
 								isVerified: true,
@@ -349,12 +353,14 @@ router.post("/BAOSON/transaction", async (req, res) => {
 		privateKeys: [privateKey], // for signing
 	});
 	let data = {
-		id: req.body.accountNumber,
-		amount: req.body.amount,
+		Fromacount: req.body.sentUserId,
+		Id: req.body.accountNumber,
+		Amount: req.body.amount,
+		Content: req.body.content,
 	};
 	let result = await axios({
 		method: "post",
-		url: "http://192.168.43.103:3000/banks/transfers", // link ngan hang muon chuyen toi
+		url: "https://ptwncinternetbanking.herokuapp.com/banks/transfers", // link ngan hang muon chuyen toi
 		data: data,
 		headers: {
 			nameBank: "SAPHASANBank",
@@ -363,6 +369,7 @@ router.post("/BAOSON/transaction", async (req, res) => {
 			sigpgp: JSON.stringify(cleartext),
 		},
 	});
+	console.log("result: ", result);
 
 	//Verify signature back
 	const publicKeyArmored = fs.readFileSync(
@@ -423,10 +430,10 @@ router.post("/transferPGP", async (req, res) => {
 		privateKeys: [privateKey], // for signing
 	});
 	let data = {
-		Id: req.body.Id,
-		Amount: req.body.Amount,
-		Content: req.body.Content,
-		Fromacount: req.body.Fromacount, // AccountNumber
+		Id: req.body.accountNumber,
+		Amount: req.body.amount,
+		Content: req.body.content,
+		Fromacount: req.body.sentUserId, // AccountNumber
 	};
 	let result = await axios({
 		method: "post",
