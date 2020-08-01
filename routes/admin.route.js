@@ -222,4 +222,35 @@ router.delete("/employees/:accountNumber", async (req, res) => {
 	return res.send(user);
 });
 
+router.get("/transactions", async (req, res) => {
+	var data = [];
+
+	let sumMoney = 0;
+
+	var transactions = await TransactionModel.find({
+		$where: "this.sentBankId != this.receivedBankId",
+	});
+	if (transactions != null && transactions.length > 0) {
+		for (let i = 0; i < transactions.length; i++) {
+			sumMoney = +sumMoney + transactions[i].amount;
+			var o = {
+				sentUserId: transactions[i].sentUserId,
+				sentUserName: transactions[i].sentUserName,
+				sentBankId: transactions[i].sentBankId,
+				receivedUserId: transactions[i].receivedUserId,
+				receivedUserName: transactions[i].receivedUserName,
+				receivedBankId: transactions[i].receivedBankId,
+				isDebt: transactions[i].isDebt,
+				isReceiverPaid: transactions[i].isReceiverPaid,
+				amount: transactions[i].amount,
+				content: transactions[i].content,
+				isVerified: transactions[i].isVerified,
+				updatedAt: transactions[i].updatedAt,
+			};
+			data.push(o);
+		}
+		return res.json({ data: data, money: sumMoney });
+	}
+});
+
 module.exports = router;
