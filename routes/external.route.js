@@ -3,6 +3,7 @@ const moment = require("moment");
 const md5 = require("md5");
 const NodeRSA = require("node-rsa");
 const usersModel = require("../models/users.model");
+const transactionModel = require("../models/transaction.model");
 const process = require("../config/process.config");
 const axios = require("axios");
 const hash = require("object-hash");
@@ -237,8 +238,15 @@ router.post("/transaction", async (req, res) => {
 								content: req.body.content,
 								signature: sign,
 							};
-							await transactionRecord.save();
-
+							await transactionModel.create(
+								transactionRecord,
+								async (err, tran) => {
+									if (err) {
+										return res.status(500).json({ message: err });
+									} else {
+									}
+								}
+							);
 							return res.json({
 								sign: responseSignature,
 								message: message,
