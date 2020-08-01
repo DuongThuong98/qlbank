@@ -299,8 +299,8 @@ router.post("/3TBank/transaction", async (req, res) => {
 	const timeStamp = moment().unix() * 1000;
 	const partnerCode = "SAPHASANBank";
 	const bodyJson = {
-		accountId: +req.body.accountNumber,
-		cost: +req.body.amount,
+		accountNumber: req.body.accountNumber.toString(),
+		cost: +req.body.cost,
 	};
 	const signature = bodyJson + timeStamp + md5("dungnoiaihet");
 	const privateKey = new NodeRSA(process.SAPHASAN.RSA_PRIVATEKEY);
