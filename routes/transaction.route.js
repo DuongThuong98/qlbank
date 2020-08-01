@@ -207,6 +207,28 @@ router.post("/verify-code", async (req, res) => {
 	const transactionId = req.get("transactionId");
 	const debtId = req.get("debtId");
 
+	//Xác định là gửi cho ngân hàng nào (nội bộ hay khác)
+	switch (tran.receivedBankId) {
+		case 0://Ngân hàng nội bộ
+			{
+
+			}
+			break;
+		case 1: //Ngần hàng của Tiền
+			{
+
+			}
+			break;
+		case 2: //Ngân hàng của Sơn
+			{
+
+			}
+			break;
+		default:
+			break;
+	}
+
+
 	if (transactionId == null) {
 		return res.status(400).json({ message: "Invalid transactionId!" });
 	}
@@ -229,6 +251,9 @@ router.post("/verify-code", async (req, res) => {
 		return res.status(400).json({ message: "Not enough money" });
 	}
 
+
+	//NỘI NGÂN HÀNG - START
+	//chỗ này cần kiểm tra thêm cái phí
 	if (tran.isReceiverPaid) {
 		receiverUser.balance = receiverUser.balance + tran.amount - fees;
 		await receiverUser.save();
@@ -258,6 +283,8 @@ router.post("/verify-code", async (req, res) => {
 
 		tran.isDebt = true;
 	}
+
+	// END
 
 	var messageNotify;
 	if (tran.isDebt) {

@@ -143,6 +143,7 @@ router.post("/SAPHASANBank/transaction", async (req, res) => {
 			res.json(error.response.data);
 		});
 });
+///
 
 // --EXTERNAL-SERVER--- nhận request, hash + verify và nạp tiền
 router.post("/transaction", async (req, res) => {
@@ -270,7 +271,7 @@ router.post("/3TBank/customer", async (req, res) => {
 				hashedSign: md5(signature),
 			},
 			params: {
-				accountId: +req.body.accountNumber,
+				accountNumber: req.body.accountNumber.toString(),
 			},
 		})
 		.then((result) => {
@@ -282,6 +283,7 @@ router.post("/3TBank/customer", async (req, res) => {
 });
 
 router.post("/3TBank/transaction", async (req, res) => {
+
 	const timeStamp = moment().unix() * 1000;
 	const partnerCode = "SAPHASANBank";
 	const bodyJson = {
