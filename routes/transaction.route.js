@@ -63,14 +63,10 @@ router.get("/history", async (req, res) => {
 				// );
 				var obj = {
 					sentUserId: trans[i].sentUserId,
-					sentUserName:
-						users[indexSentUser] != null ? users[indexSentUser].name : null,
+					sentUserName: trans[i].sentUserName || "ẨN DANH",
 					sentBankId: trans[i].sentBankId,
 					receivedUserId: trans[i].receivedUserId,
-					receivedUserName:
-						users[indexReceivedUser] != null
-							? users[indexReceivedUser].name
-							: null,
+					receivedUserName: trans[i].receivedUserName || "ẨN DANH",
 					receivedBankId: trans[i].receivedBankId,
 					isDebt: trans[i].isDebt,
 					isReceiverPaid: trans[i].isReceiverPaid,
@@ -210,8 +206,6 @@ router.post("/verify-code", async (req, res) => {
 	const transactionId = req.get("transactionId");
 	const debtId = req.get("debtId");
 
-
-
 	if (transactionId == null) {
 		return res.status(400).json({ message: "Invalid transactionId!" });
 	}
@@ -231,7 +225,7 @@ router.post("/verify-code", async (req, res) => {
 
 	//Xác định là gửi cho ngân hàng nào (nội bộ hay khác)
 	switch (tran.receivedBankId) {
-		case 0://Ngân hàng nội bộ
+		case 0: //Ngân hàng nội bộ
 			{
 				var receiverUser = await UserModel.findOne({
 					accountNumber: tran.receivedUserId,
@@ -313,7 +307,6 @@ router.post("/verify-code", async (req, res) => {
 						console.log(notify);
 					}
 				});
-
 			}
 			break;
 		case 1: //Ngần hàng của Tiền
@@ -356,14 +349,11 @@ router.post("/verify-code", async (req, res) => {
 			break;
 		case 2: //Ngân hàng của Sơn
 			{
-
 			}
 			break;
 		default:
 			break;
 	}
-
-
 
 	// Update transaction
 	tran.isVerified = true;
