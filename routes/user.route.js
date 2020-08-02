@@ -346,21 +346,21 @@ router.get("/bank/:bankId/users/:id", async (req, res) => {
 				const signature = timeStamp + md5("dungnoiaihet");
 
 				await axios
-					.get(`${process.Bank_3T.SERVER_URL}/api/v1/user`, {
-						headers: {
-							ts: timeStamp,
-							partnerCode: partnerCode,
-							hashedSign: md5(signature),
-						},
-						params: {
-							accountId: userId,
-						},
-					})
+					.get(
+						`${process.Bank_3T.SERVER_URL}/api/v1/user?accountNumber=${req.params.id}`,
+						{
+							headers: {
+								ts: timeStamp,
+								partnerCode: partnerCode,
+								hashedSign: md5(signature),
+							},
+						}
+					)
 					.then((result) => {
 						if (result.data) {
 							findingUser.push({
-								accountNumber: result.data.data.account,
-								name: result.data.data.fullName,
+								accountNumber: result.data.data.account_number,
+								name: result.data.data.full_name,
 								username: result.data.data.username
 									? result.data.data.username
 									: "",
@@ -374,27 +374,51 @@ router.get("/bank/:bankId/users/:id", async (req, res) => {
 			{
 				const data = {
 					Id: userId.toString(),
-				  };
-				  let result = await axios({
-					method: "post",
-					url: "https://ptwncinternetbanking.herokuapp.com/banks/detail", // link ngan hang muon chuyen toi
-					data: data,
-					headers: {
-					  nameBank: "SAPHASANBank",
-					  ts: moment().unix(),
-					  sig: hash(moment().unix() + data.Id + "secretkey"),
-					},
-				  });
-				  if (!result) {
-					
-				  } else {
-					  console.log(result)
-					findingUser.push({
-						accountNumber: userId,
-						name: result.data.result.Fullname,
-						username: result.data.result.username ? result.data.result.username : "",
+				};
+				// let result = await axios({
+				// 	method: "post",
+				// 	url: "https://ptwncinternetbanking.herokuapp.com/banks/detail", // link ngan hang muon chuyen toi
+				// 	data: data,
+				// 	headers: {
+				// 		nameBank: "SAPHASANBank",
+				// 		ts: moment().unix(),
+				// 		sig: hash(moment().unix() + data.Id + "secretkey"),
+				// 	},
+				// });
+				// if (!result.data) {
+				// } else {
+				// 	findingUser.push({
+				// 		accountNumber: userId,
+				// 		name: result.data.result.Fullname,
+				// 		username: result.data.result.username
+				// 			? result.data.result.username
+				// 			: "",
+				// 	});
+				// }
+				await axios
+					.post(
+						`https://ptwncinternetbanking.herokuapp.com/banks/detail`,
+						data,
+						{
+							headers: {
+								nameBank: "SAPHASANBank",
+								ts: moment().unix(),
+								sig: hash(moment().unix() + data.Id + "secretkey"),
+							},
+						}
+					)
+					.then((result) => {
+						if (result.data) {
+							findingUser.push({
+								accountNumber: userId,
+								name: result.data.result.Fullname,
+								username: result.data.result.username
+									? result.data.result.username
+									: "",
+							});
+						}
 					})
-				  }
+					.catch((err) => console.log(err));
 			}
 			break;
 	}
