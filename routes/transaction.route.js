@@ -131,7 +131,7 @@ router.post("/", (req, res) => {
 		sentUserName: currentUser.name,
 		sentBankId: currentUser.bankId ? currentUser.bankId : 0,
 		receivedUserId: receivedUserId,
-		receivedUserName: receivedUserName,
+		receivedUserName: receivedUserName ? receivedUserName : "",
 		receivedBankId: receivedBankId,
 		isDebt: isDebt,
 		isVerified: false,
@@ -222,6 +222,7 @@ router.post("/verify-code", async (req, res) => {
 	if (currentUser.balance - tran.amount <= minimumAmount) {
 		return res.status(400).json({ message: "Not enough money" });
 	}
+
 
 	//Xác định là gửi cho ngân hàng nào (nội bộ hay khác)
 	switch (tran.receivedBankId) {
@@ -336,14 +337,36 @@ router.post("/verify-code", async (req, res) => {
 					.then(async (result) => {
 						if (result.data);
 						{
-							currentUser.balance = currentUser.balance - tran.amount - fees;
-							await currentUser.save();
-
 							console.log(result.data);
+
+							Key_Public = process.Bank_3T.RSA_PUBLICKEY;
+							const sign = result.data.sign;
+							const keyPublic = new NodeRSA(Key_Public);
+							bodyConfirm = {
+								accountNumber: tran.receivedUserId.toString(),
+								balance: +tran.amount,
+								status: "SUCCESS"
+							}
+							const veri = keyPublic.verify(bodyConfirm, sign, "base64", "base64");
+							console.log("veri:", veri);
+							if (veri != true) {
+								return res.status(400).json({
+									message: "Sai chữ kí",
+								});
+							}
+							else {
+								currentUser.balance = currentUser.balance - tran.amount - fees;
+								await currentUser.save();
+						
+								tran.signature = sign;
+								await tran.save();
+							}
 						}
+						return result;
+
 					})
 					.catch((error) => {
-						res.status(400).json(error);
+						throw(error);
 					});
 			}
 			break;
