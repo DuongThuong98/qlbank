@@ -266,7 +266,7 @@ router.post("/transaction", async (req, res) => {
 });
 
 router.post("/3TBank/customer", async (req, res) => {
-	// body: "accountNumber": "123456789"
+	// body: "accountNumber": "97002424324123"
 	console.log("BODY1: ", req.body);
 	if (!req.body.accountNumber || isNaN(+req.body.accountNumber))
 		return res.status(500).json({ message: "Please provide valid id." });
@@ -276,16 +276,18 @@ router.post("/3TBank/customer", async (req, res) => {
 	const signature = timeStamp + md5("dungnoiaihet");
 
 	await axios
-		.get(`${process.Bank_3T.SERVER_URL}/api/v1/user`, {
-			headers: {
-				ts: timeStamp,
-				partnerCode: partnerCode,
-				hashedSign: md5(signature),
-			},
-			params: {
-				accountNumber: req.body.accountNumber.toString(),
-			},
-		})
+		.get(
+			`${
+				process.Bank_3T.SERVER_URL
+			}/api/v1/user?accountNumber=${req.body.accountNumber.toString()}`,
+			{
+				headers: {
+					ts: timeStamp,
+					partnerCode: partnerCode,
+					hashedSign: md5(signature),
+				},
+			}
+		)
 		.then((result) => {
 			if (result.data) return res.json(result.data);
 		})
@@ -295,7 +297,6 @@ router.post("/3TBank/customer", async (req, res) => {
 });
 
 router.post("/3TBank/transaction", async (req, res) => {
-
 	const timeStamp = moment().unix() * 1000;
 	const partnerCode = "SAPHASANBank";
 	const bodyJson = {
@@ -327,6 +328,7 @@ router.post("/3TBank/transaction", async (req, res) => {
 		});
 });
 
+//"Id": "2750027628572576"
 router.post("/BAOSON/customer", async (req, res) => {
 	const data = {
 		Id: req.body.accountNumber,
