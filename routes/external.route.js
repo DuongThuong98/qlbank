@@ -14,7 +14,7 @@ const path = require("path");
 // const externalController = require("../controllers/external.controllers");
 
 const router = express.Router();
-
+const fees = 1000;
 const confirm = (req) => {
 	const ts = req.get("ts");
 	const partnerCode = req.get("partnerCode");
@@ -151,7 +151,8 @@ router.post("/SAPHASANBank/transaction", async (req, res) => {
 // --EXTERNAL-SERVER--- nhận request, hash + verify và nạp tiền
 router.post("/transaction", async (req, res) => {
 	// req -> headers [ts, partnerCode, hashedSign] + [sign (req.body-RSA)]
-	// req -> bodyjson: {sentId: _id, bankId: 1, accountNumber: _id, amount: 50000, content: "Tien an 2020", [timestamps]}
+	// req -> bodyjson: {sentId: _id, bankId: 1, 
+	//accountNumber: _id, amount: 50000, content: "Tien an 2020", isReceiverPaid: true}
 	// response -> "thành công hay không"
 
 	// bodyjson: {sentId: _id, bankId: 1, accountNumber: _id, amount: 50000, content: "Tien an 2020", [timestamps]}
@@ -211,8 +212,13 @@ router.post("/transaction", async (req, res) => {
 					.send({ message: "Đã có lỗi xảy ra, vui lòng thử lại!" });
 			}
 			if (user) {
-				const userNewBalance = user.balance + req.body.amount;
+
+				let userNewBalance = user.balance + req.body.amount;
+				if(req.body.isReceiverPaid == true){
+					userNewBalance = userNewBalance - fees;
+				}
 				user.balance = userNewBalance;
+
 				await user
 					.save()
 					.then(async (newData) => {

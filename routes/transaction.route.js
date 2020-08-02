@@ -224,9 +224,20 @@ router.post("/verify-code", async (req, res) => {
 	if (tran == null)
 		return res.status(404).json({ message: "Not found transaction!" });
 
-	//kiem tra nguoi  gui co du tien gui hay khong ||
-	if (currentUser.balance - tran.amount <= minimumAmount) {
-		return res.status(400).json({ message: "Not enough money" });
+
+
+	//chỗ này cần kiểm tra thêm cái phí
+	if (tran.isReceiverPaid) {
+		//kiem tra nguoi  gui co du tien gui hay khong ||
+		if (currentUser.balance - tran.amount <= minimumAmount) {
+			return res.status(400).json({ message: "Not enough minimum amount of money" });
+		}
+	} else {
+		//kiem tra xem so du sua khi chuyen co lon hon 1000 ko?
+		if (currentUser.balance - tran.amount - fees <= minimumAmount) {
+			return res.status(400).json({ message: "Not enough minimum amount of money with fee" });
+		}
+	
 	}
 
 
@@ -323,7 +334,11 @@ router.post("/verify-code", async (req, res) => {
 				const partnerCode = "SAPHASANBank";
 				const bodyJson = {
 					accountNumber: tran.receivedUserId.toString(),
+					sendAccountNumber: tran.sentUserId.toString() ,
+					sendAccountName: tran.sentUserName ,
 					cost: +tran.amount,
+					feeType: tran.isReceiverPaid ? "NOT_PAY" : "PAY",
+					message: tran.content ? tran.content : "" 
 				};
 				const signature = bodyJson + timeStamp + md5("dungnoiaihet");
 				const privateKey = new NodeRSA(process.SAPHASAN.RSA_PRIVATEKEY);
@@ -362,8 +377,15 @@ router.post("/verify-code", async (req, res) => {
 								});
 							}
 							else {
-								currentUser.balance = currentUser.balance - tran.amount - fees;
-								await currentUser.save();
+
+								//chỗ này cần kiểm tra thêm cái phí
+								if (tran.isReceiverPaid) {
+									currentUser.balance = currentUser.balance - tran.amount;
+									await currentUser.save();
+								} else {
+									currentUser.balance = currentUser.balance - tran.amount - fees;
+									await currentUser.save();
+								}
 						
 								tran.signature = sign;
 								await tran.save();
@@ -373,7 +395,7 @@ router.post("/verify-code", async (req, res) => {
 
 					})
 					.catch((error) => {
-						throw(error);
+						throw (error);
 					});
 			}
 			break;
