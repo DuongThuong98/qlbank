@@ -140,7 +140,7 @@ router.post("/deposit", async (req, res) => {
 					<h2>Bạn đã nạp ${amount} vào tài khoản.</h2>
 					<h1>Vào lúc: ${tran.createdAt} </h1>
 					<p>Số dư khả dụng: ${receiverUser.balance}</p>
-					</div>`;
+				</div>`;
 
 			var mailOptions = {
 				from: `huuthoigialai@gmail.com`,
@@ -223,33 +223,38 @@ router.delete("/employees/:accountNumber", async (req, res) => {
 });
 
 router.get("/transactions", async (req, res) => {
-	var data = [];
+	try {
+		var data = [];
 
-	let sumMoney = 0;
+		let sumMoney = 0;
 
-	var transactions = await TransactionModel.find({
-		$where: "this.sentBankId != this.receivedBankId",
-	});
-	if (transactions != null && transactions.length > 0) {
-		for (let i = 0; i < transactions.length; i++) {
-			sumMoney = +sumMoney + transactions[i].amount;
-			var o = {
-				sentUserId: transactions[i].sentUserId,
-				sentUserName: transactions[i].sentUserName,
-				sentBankId: transactions[i].sentBankId,
-				receivedUserId: transactions[i].receivedUserId,
-				receivedUserName: transactions[i].receivedUserName,
-				receivedBankId: transactions[i].receivedBankId,
-				isDebt: transactions[i].isDebt,
-				isReceiverPaid: transactions[i].isReceiverPaid,
-				amount: transactions[i].amount,
-				content: transactions[i].content,
-				isVerified: transactions[i].isVerified,
-				updatedAt: transactions[i].updatedAt,
-			};
-			data.push(o);
+		var transactions = await TransactionModel.find({
+			$where: "this.sentBankId != this.receivedBankId",
+		});
+		if (transactions != null && transactions.length > 0) {
+			for (let i = 0; i < transactions.length; i++) {
+				sumMoney = +sumMoney + transactions[i].amount;
+				var o = {
+					sentUserId: transactions[i].sentUserId,
+					sentUserName: transactions[i].sentUserName,
+					sentBankId: transactions[i].sentBankId,
+					receivedUserId: transactions[i].receivedUserId,
+					receivedUserName: transactions[i].receivedUserName,
+					receivedBankId: transactions[i].receivedBankId,
+					isDebt: transactions[i].isDebt,
+					isReceiverPaid: transactions[i].isReceiverPaid,
+					amount: transactions[i].amount,
+					content: transactions[i].content,
+					isVerified: transactions[i].isVerified,
+					updatedAt: transactions[i].updatedAt,
+				};
+				data.push(o);
+			}
+			return res.json({ data: data, money: sumMoney });
 		}
-		return res.json({ data: data, money: sumMoney });
+	} catch (error) {
+		console.log(error);
+		return res.status(500).json({ message: error });
 	}
 });
 
