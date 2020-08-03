@@ -215,7 +215,7 @@ router.post("/transaction", async (req, res) => {
 
 				//cộng tiền vào tài khoản
 				let userNewBalance = user.balance + req.body.amount;
-				if(req.body.isReceiverPaid == false){
+				if(req.body.isReceiverPaid == true){
 					userNewBalance = userNewBalance - fees;
 				}
 				user.balance = userNewBalance;
