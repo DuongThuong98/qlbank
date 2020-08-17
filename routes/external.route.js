@@ -356,11 +356,12 @@ router.post("/BAOSON/customer", async (req, res) => {
 });
 
 router.post("/BAOSON/transaction", async (req, res) => {
+	// let paymet = await banksModel.detail({ Iduser: req.tokenPayload.userId });
 	const privateKeyArmored = fs.readFileSync(
 		path.join(__dirname, "../config/PGPKeys/SAPHASAN-PGP-private.asc"),
 		"utf8"
 	); // encrypted private key
-	const passphrase = "12345"; // password that private key is encrypted with
+	const passphrase = "12345"; // what the private key is encrypted with
 	const {
 		keys: [privateKey],
 	} = await openPgp.key.readArmored(privateKeyArmored);
@@ -369,39 +370,45 @@ router.post("/BAOSON/transaction", async (req, res) => {
 		message: openPgp.cleartext.fromText("From SAPHASANBank"), // CleartextMessage or Message object
 		privateKeys: [privateKey], // for signing
 	});
-	let data = {
-		Fromacount: req.body.sentUserId,
-		Id: req.body.accountNumber,
-		Amount: req.body.amount,
-		Content: req.body.content,
-	};
-	let result = await axios({
-		method: "post",
-		url: "https://ptwncinternetbanking.herokuapp.com/banks/transfers", // link ngan hang muon chuyen toi
-		data: data,
-		headers: {
-			nameBank: "SAPHASANBank",
-			ts: moment().unix(),
-			sig: hash(moment().unix() + data + "secretkey"),
-			sigpgp: JSON.stringify(cleartext),
-		},
-	});
-	console.log("result: ", result);
+	// let data = {
+	// 	Id: req.body.accountNumber,
+	// 	Amount: req.body.amount,
+	// 	Content: req.body.content,
+	// 	Fromaccount: req.body.sentUserId,
+	// 	FromName: req.body.fromName,
+	// 	ToName: req.body.toName,
+	// 	feeBySender: req.body.feeBySender,
+	// };
 
-	//Verify signature back
-	const publicKeyArmored = fs.readFileSync(
-		path.join(__dirname, "../config/PGPKeys/BAOSON-PGP-public.asc"),
-		"utf8"
-	); // encrypted private key
-	const verified = await openPgp.verify({
-		message: await openPgp.cleartext.readArmored(result.data.sign),
-		publicKeys: (await openPgp.key.readArmored(publicKeyArmored)).keys, // for verification
-	});
-	const { valid } = verified.signatures[0];
-	if (valid) {
-		return res.json(result.data);
+	let data = {
+		Id: "2750027628572576",
+		Amount: 50000,
+		Content: "nop tien",
+		Fromaccount: "123456789",
+		FromName: "nguyen van abc",
+		ToName: "abcscas",
+		feeBySender: true,
+	};
+	console.log(data);
+	try {
+		let result = await axios({
+			method: "post",
+			url: "https://ptwncinternetbanking.herokuapp.com/banks/transfers", // link ngan hang muon chuyen toi
+			data: {
+				...data,
+			},
+			headers: {
+				nameBank: "SAPHASANBank",
+				ts: moment().unix(),
+				sig: hash(moment().unix() + data + "secretkey"),
+				sigpgp: JSON.stringify(cleartext),
+			},
+		});
+		return res.status(200).json(result.data);
+	} catch (error) {
+		console.log("error: ", error.response);
+		throw createError(401, error.response.data.err);
 	}
-	return res.status(404).end();
 });
 
 //"Id": "2750027628572576"
@@ -433,44 +440,96 @@ router.post("/detailPGP", async (req, res) => {
 // 	"Content":"nop tien"
 // "Fromacount": "123456789"
 router.post("/transferPGP", async (req, res) => {
+	// let paymet = await banksModel.detail({ Iduser: req.tokenPayload.userId });
 	const privateKeyArmored = fs.readFileSync(
 		path.join(__dirname, "../config/PGPKeys/SAPHASAN-PGP-private.asc"),
 		"utf8"
 	); // encrypted private key
-	const passphrase = `12345`; // what the private key is encrypted with
+	const passphrase = "12345"; // what the private key is encrypted with
 	const {
 		keys: [privateKey],
 	} = await openPgp.key.readArmored(privateKeyArmored);
 	await privateKey.decrypt(passphrase);
 	const { data: cleartext } = await openPgp.sign({
-		message: openPgp.cleartext.fromText("NHÓM 6"), // CleartextMessage or Message object
+		message: openPgp.cleartext.fromText("From SAPHASANBank"), // CleartextMessage or Message object
 		privateKeys: [privateKey], // for signing
 	});
 	let data = {
-		Id: req.body.accountNumber,
-		Amount: req.body.amount,
-		Content: req.body.content,
-		Fromacount: req.body.sentUserId, // AccountNumber
+		Id: "2750027628572576",
+		Amount: 50000,
+		Content: "nop tien",
+		Fromaccount: "123456789",
+		FromName: "nguyen van abc",
+		ToName: "abcscas",
+		feeBySender: true,
 	};
-	let result = await axios({
-		method: "post",
-		url: "https://ptwncinternetbanking.herokuapp.com/banks/transfers", // link ngan hang muon chuyen toi
-		data: {
-			...data,
-		},
-		headers: {
-			nameBank: "SAPHASANBank",
-			ts: moment().unix(),
-			sig: hash(moment().unix() + data + "secretkey"),
-			sigpgp: JSON.stringify(cleartext),
-		},
-	});
-	if (!result) {
-		return res.status(404).end();
-	} else {
-		console.log(result);
-		return res.json(result.data);
+	try {
+		let result = await axios({
+			method: "post",
+			url: "https://ptwncinternetbanking.herokuapp.com/banks/transfers", // link ngan hang muon chuyen toi
+			data: {
+				...data,
+			},
+			headers: {
+				nameBank: "SAPHASANBank",
+				ts: moment().unix(),
+				sig: hash(moment().unix() + data + "secretkey"),
+				sigpgp: JSON.stringify(cleartext),
+			},
+		});
+		return res.status(200).json(result.data);
+	} catch (error) {
+		console.log("error: ", error.response.data);
+		throw createError(401, error.response.data.err);
 	}
 });
 
+
+
+
+
 module.exports = router;
+
+// "Id": "2750027628572576",
+// 	"Amount":50000,
+// 	"Content":"nop tien"
+// "Fromaccount": "123456789"  Số tài khoản người gửi
+// "FromName":"nguyen van abc",
+// "ToName": "abcscas"
+// "feeBySender":true or false
+// router.post('/transferPGP', async (req, res) => {
+// 	// let paymet = await banksModel.detail({ Iduser: req.tokenPayload.userId });
+// 	const privateKeyArmored = fs.readFileSync(path.join(__dirname, '../public/myPGP/privateKeyPGP.asc'), 'utf8'); //my private key PGP
+// 	const passphrase = baoson123; // what the private key is encrypted with
+// 	const { keys: [privateKey] } = await openpgp.key.readArmored(privateKeyArmored);
+// 	await privateKey.decrypt(passphrase);
+// 	const { data: cleartext } = await openpgp.sign({
+// 	  message: openpgp.cleartext.fromText("NHÓM 6"), // CleartextMessage or Message object
+// 	  privateKeys: [privateKey]                     // for signing
+// 	});
+// 	let data = {
+// 	  ...req.body,
+// 	  //   Fromacount:paymet[0].Id // so tai khoan nguoi gui
+// 	};
+// 	try{
+// 	  let result = await axios({
+// 		method: 'post',
+// 		url: 'https://ptwncinternetbanking.herokuapp.com/banks/transfers', // link ngan hang muon chuyen toi
+// 		data: {
+// 		  ...data
+// 		},
+// 		headers: {
+// 		  nameBank: 'baoson',
+// 		  ts: moment().unix(),
+// 		  sig: hash(moment().unix() + data + "secretkey"),
+// 		  sigpgp: JSON.stringify(cleartext)
+// 		},
+// 	  });
+// 	  return res.status(200).json(result.data);
+// 	}catch (error){
+// 	  console.log("error: ", error.response.data)
+// 	  throw createError(401, error.response.data.err)
+// 	}
+//   })
+
+
