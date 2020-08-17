@@ -447,6 +447,10 @@ router.post("/transferPGP", async (req, res) => {
 		path.join(__dirname, "../config/PGPKeys/SAPHASAN-PGP-private.asc"),
 		"utf8"
 	); // encrypted private key
+	const publicKeyArmored = fs.readFileSync(
+		path.join(__dirname, "../config/PGPKeys/BAOSON-PGP-public.asc"),
+		"utf8"
+	); // encrypted private key
 	const passphrase = "12345"; // what the private key is encrypted with
 	const {
 		keys: [privateKey],
@@ -465,27 +469,33 @@ router.post("/transferPGP", async (req, res) => {
 		ToName: "abcscas",
 		feeBySender: true,
 	};
-	try {
-		let result = await axios({
-			method: "post",
-			url: "https://ptwncinternetbanking.herokuapp.com/banks/transfers", // link ngan hang muon chuyen toi
-			data: {
-				...data,
-			},
-			headers: {
-				nameBank: "SAPHASANBank",
-				ts: moment().unix(),
-				sig: hash(moment().unix() + data + "secretkey"),
-				sigpgp: JSON.stringify(cleartext),
-			},
-		});
-		return res.status(200).json(result.data);
-	} catch (error) {
-		console.log("error: ", error.response.data);
-		throw createError(401, error.response.data.err);
-	}
+	await axios({
+		method: "post",
+		url: "https://ptwncinternetbanking.herokuapp.com/banks/transfers", // link ngan hang muon chuyen toi
+		data: data,
+		headers: {
+			nameBank: "SAPHASANBank",
+			ts: moment().unix(),
+			sig: hash(moment().unix() + data + "secretkey"),
+			sigpgp: JSON.stringify(cleartext),
+		},
+	})
+		.then(async (result) => {
+			const verified = await openPgp.verify({
+				message: await openPgp.cleartext.readArmored(result.data.sign),
+				publicKeys: (await openPgp.key.readArmored(publicKeyArmored)).keys,
+			});
+			const { valid } = verified.signatures[0];
+			if (valid) {
+				console.log("signed by key id " + verified.signatures[0].keyid.toHex());
+			} else {
+				console.log("cannot verify this fucking message");
+				throw new Error("cannot verify that key");
+			}
+		})
+		.catch((err) => console.log("error: ", err));
+	res.json("Successfully");
 });
-
 
 
 

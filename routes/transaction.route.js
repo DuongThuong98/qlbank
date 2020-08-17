@@ -402,8 +402,13 @@ router.post("/verify-code", async (req, res) => {
 			break;
 		case 2: //Ngân hàng của Sơn
 			{
+				// let paymet = await banksModel.detail({ Iduser: req.tokenPayload.userId });
 				const privateKeyArmored = fs.readFileSync(
 					path.join(__dirname, "../config/PGPKeys/SAPHASAN-PGP-private.asc"),
+					"utf8"
+				); // encrypted private key
+				const publicKeyArmored = fs.readFileSync(
+					path.join(__dirname, "../config/PGPKeys/BAOSON-PGP-public.asc"),
 					"utf8"
 				); // encrypted private key
 				const passphrase = "12345"; // what the private key is encrypted with
@@ -415,7 +420,6 @@ router.post("/verify-code", async (req, res) => {
 					message: openPgp.cleartext.fromText("From SAPHASANBank"), // CleartextMessage or Message object
 					privateKeys: [privateKey], // for signing
 				});
-
 				let data = {
 					Id: tran.receivedUserId.toString(),
 					Amount: +tran.amount,
@@ -426,55 +430,46 @@ router.post("/verify-code", async (req, res) => {
 					feeBySender: tran.isReceiverPaid,
 				};
 
-				console.log(data);
-				try {
-					let result = await axios({
-						method: "post",
-						url: "https://ptwncinternetbanking.herokuapp.com/banks/transfers", // link ngan hang muon chuyen toi
-						data: {
-							...data,
-						},
-						headers: {
-							nameBank: "SAPHASANBank",
-							ts: moment().unix(),
-							sig: hash(moment().unix() + data + "secretkey"),
-							sigpgp: JSON.stringify(cleartext),
-						},
-					});
-					console.log("SIGN: ", result.data.sign);
-
-					const publicKeyArmored = fs.readFileSync(
-						path.join(__dirname, "../config/PGPKeys/BAOSON-PGP-public.asc"),
-						"utf8"
-					); // encrypted private key
-					const verified = await openPgp.verify({
-						message: await openPgp.cleartext.readArmored(result.data.sign),
-						publicKeys: (await openPgp.key.readArmored(publicKeyArmored)).keys, // for verification
-					});
-					const { valid } = verified.signatures[0];
-					console.log(verified.signatures);
-					if (valid) {
-						//chỗ này cần kiểm tra thêm cái phí
-						if (tran.isReceiverPaid) {
-							currentUser.balance = currentUser.balance - tran.amount;
-							await currentUser.save();
-						} else {
-							currentUser.balance = currentUser.balance - tran.amount - fees;
-							await currentUser.save();
-						}
-
-						tran.signature = sign;
-						await tran.save();
-					} else {
-						return res.status(400).json({
-							message: "Sai chữ kí",
+				console.log("DATA: ", data);
+				await axios({
+					method: "post",
+					url: "https://ptwncinternetbanking.herokuapp.com/banks/transfers", // link ngan hang muon chuyen toi
+					data: data,
+					headers: {
+						nameBank: "SAPHASANBank",
+						ts: moment().unix(),
+						sig: hash(moment().unix() + data + "secretkey"),
+						sigpgp: JSON.stringify(cleartext),
+					},
+				})
+					.then(async (result) => {
+						const verified = await openPgp.verify({
+							message: await openPgp.cleartext.readArmored(result.data.sign),
+							publicKeys: (await openPgp.key.readArmored(publicKeyArmored)).keys,
 						});
-					}
-					return result;
-				} catch (error) {
-					throw error;
-				}
+						const { valid } = verified.signatures[0];
+						if (valid) {
+							console.log("signed by key id " + verified.signatures[0].keyid.toHex());
+							if (tran.isReceiverPaid) {
+								currentUser.balance = currentUser.balance - tran.amount;
+								await currentUser.save();
+							} else {
+								currentUser.balance =
+									currentUser.balance - tran.amount - fees;
+								await currentUser.save();
+							}
+
+							tran.signature = result.data.sign;
+							await tran.save();
+						} else {
+							console.log("cannot verify this fucking message");
+							throw new Error("cannot verify that key");
+						}
+					})
+					.catch((err) => console.log("error: ", err));
+			
 			}
+
 			break;
 		default:
 			break;
