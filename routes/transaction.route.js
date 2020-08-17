@@ -223,22 +223,22 @@ router.post("/verify-code", async (req, res) => {
 	if (tran == null)
 		return res.status(404).json({ message: "Not found transaction!" });
 
-
-
 	//chỗ này cần kiểm tra thêm cái phí
 	if (tran.isReceiverPaid) {
 		//kiem tra nguoi  gui co du tien gui hay khong ||
 		if (currentUser.balance - tran.amount <= minimumAmount) {
-			return res.status(400).json({ message: "Not enough minimum amount of money" });
+			return res
+				.status(400)
+				.json({ message: "Not enough minimum amount of money" });
 		}
 	} else {
 		//kiem tra xem so du sua khi chuyen co lon hon 1000 ko?
 		if (currentUser.balance - tran.amount - fees <= minimumAmount) {
-			return res.status(400).json({ message: "Not enough minimum amount of money with fee" });
+			return res
+				.status(400)
+				.json({ message: "Not enough minimum amount of money with fee" });
 		}
-	
 	}
-
 
 	//Xác định là gửi cho ngân hàng nào (nội bộ hay khác)
 	switch (tran.receivedBankId) {
@@ -332,11 +332,11 @@ router.post("/verify-code", async (req, res) => {
 				const partnerCode = "SAPHASANBank";
 				const bodyJson = {
 					accountNumber: tran.receivedUserId.toString(),
-					sendAccountNumber: tran.sentUserId.toString() ,
-					sendAccountName: tran.sentUserName ,
+					sendAccountNumber: tran.sentUserId.toString(),
+					sendAccountName: tran.sentUserName,
 					cost: +tran.amount,
 					feeType: tran.isReceiverPaid ? "NOT_PAY" : "PAY",
-					message: tran.content ? tran.content : "" 
+					message: tran.content ? tran.content : "",
 				};
 				const signature = bodyJson + timeStamp + md5("dungnoiaihet");
 				const privateKey = new NodeRSA(process.SAPHASAN.RSA_PRIVATEKEY);
@@ -365,35 +365,38 @@ router.post("/verify-code", async (req, res) => {
 							bodyConfirm = {
 								accountNumber: tran.receivedUserId.toString(),
 								balance: +tran.amount,
-								status: "SUCCESS"
-							}
-							const veri = keyPublic.verify(bodyConfirm, sign, "base64", "base64");
+								status: "SUCCESS",
+							};
+							const veri = keyPublic.verify(
+								bodyConfirm,
+								sign,
+								"base64",
+								"base64"
+							);
 							console.log("veri:", veri);
 							if (veri != true) {
 								return res.status(400).json({
 									message: "Sai chữ kí",
 								});
-							}
-							else {
-
+							} else {
 								//chỗ này cần kiểm tra thêm cái phí
 								if (tran.isReceiverPaid) {
 									currentUser.balance = currentUser.balance - tran.amount;
 									await currentUser.save();
 								} else {
-									currentUser.balance = currentUser.balance - tran.amount - fees;
+									currentUser.balance =
+										currentUser.balance - tran.amount - fees;
 									await currentUser.save();
 								}
-						
+
 								tran.signature = sign;
 								await tran.save();
 							}
 						}
 						return result;
-
 					})
 					.catch((error) => {
-						throw (error);
+						throw error;
 					});
 			}
 			break;
@@ -413,12 +416,10 @@ router.post("/verify-code", async (req, res) => {
 					privateKeys: [privateKey], // for signing
 				});
 
-
-
 				let data = {
-					Id:tran.receivedUserId.toString(),
-					Amount:+tran.amount,
-					Content: tran.content ? tran.content : "" ,
+					Id: tran.receivedUserId.toString(),
+					Amount: +tran.amount,
+					Content: tran.content ? tran.content : "",
 					Fromaccount: tran.sentUserId.toString(),
 					FromName: tran.sentUserName,
 					ToName: "username của BAOSONBank",
@@ -447,32 +448,31 @@ router.post("/verify-code", async (req, res) => {
 						"utf8"
 					); // encrypted private key
 					const verified = await openPgp.verify({
-						message: await openPgp.cleartext.readArmored((result.data.sign)),
+						message: await openPgp.cleartext.readArmored(result.data.sign),
 						publicKeys: (await openPgp.key.readArmored(publicKeyArmored)).keys, // for verification
 					});
 					const { valid } = verified.signatures[0];
 					console.log(verified.signatures);
 					if (valid) {
-							//chỗ này cần kiểm tra thêm cái phí
-							if (tran.isReceiverPaid) {
-								currentUser.balance = currentUser.balance - tran.amount;
-								await currentUser.save();
-							} else {
-								currentUser.balance = currentUser.balance - tran.amount - fees;
-								await currentUser.save();
-							}
-					
-							tran.signature = sign;
-							await tran.save();
-					}else
-					{
+						//chỗ này cần kiểm tra thêm cái phí
+						if (tran.isReceiverPaid) {
+							currentUser.balance = currentUser.balance - tran.amount;
+							await currentUser.save();
+						} else {
+							currentUser.balance = currentUser.balance - tran.amount - fees;
+							await currentUser.save();
+						}
+
+						tran.signature = sign;
+						await tran.save();
+					} else {
 						return res.status(400).json({
 							message: "Sai chữ kí",
 						});
 					}
 					return result;
 				} catch (error) {
-					throw(error)
+					throw error;
 				}
 			}
 			break;
@@ -550,73 +550,87 @@ router.delete("/", async (req, res) => {
 ////////
 module.exports = router;
 
-
 router.post("/transbhs", async (req, res) => {
-	let data =
-	{
-	  nameBank: req.header('nameBank'),
-	  ts: req.header('ts'),
-	  sig: req.header('sig'),
-	  sigpgp: req.header('sigpgp'),
-	  body: req.body,
+	let data = {
+		nameBank: req.header("nameBank"),
+		ts: req.header("ts"),
+		sig: req.header("sig"),
+		sigpgp: req.header("sigpgp"),
+		body: req.body,
 	};
-	var publicKeyArmored = ""
+	var publicKeyArmored = "";
 	if (data.nameBank == "Eight Bank") {
-	  publicKeyArmored = PGP.EightBank;
+		publicKeyArmored = PGP.EightBank;
 	} else if (data.nameBank == "SAPHASANBank") {
-	  publicKeyArmored = PGP.SAPHASANBank;
+		publicKeyArmored = PGP.SAPHASANBank;
 	} else if (data.nameBank == "baoson") {
-	  publicKeyArmored = PGP.baoson;
+		publicKeyArmored = PGP.baoson;
 	}
-	let sigcompare = hash(data.ts + data.body + "secretkey"); //secretkey 
+	let sigcompare = hash(data.ts + data.body + "secretkey"); //secretkey
 	if (data.ts <= moment().unix() + 1500) {
-	  if (data.sig === sigcompare) {
-		const verified = await openpgp.verify({
-		  message: await openpgp.cleartext.readArmored(JSON.parse(data.sigpgp)),           // parse armored message
-		  publicKeys: (await openpgp.key.readArmored(publicKeyArmored)).keys // for verification
-		});
-		const { valid } = verified.signatures[0];
-		if (valid) {
-		  console.log('signed by key id ' + verified.signatures[0].keyid.toHex());
-  
-		  const privateKeyArmored = MyPGP.privateKeyPGP; // encrypted private key
-		  const passphrase = baoson123; // what the private key is encrypted with
-		  const { keys: [privateKey] } = await openpgp.key.readArmored(privateKeyArmored);
-  
-		  await privateKey.decrypt(passphrase);
-		  const { data: cleartext } = await openpgp.sign({
-			message: openpgp.cleartext.fromText("NGANHANGBAOSON"), // CleartextMessage or Message object
-			privateKeys: [privateKey]    // for signing
-		  });
-		  let paymet = await banksModel.detail({ Id: data.body.Id });
-		 
-		  let entity = {
-			Amount: data.body.Amount,
-			Fromaccount: data.body.Fromaccount,
-			Content: data.body.Content,
-			Toaccount: data.body.Id,
-			FromName: data.body.FromName,
-			ToName: data.body.ToName,
-			Date: moment().format('YYYY-MM-DD HH:mm:ss'),
-			Sign: data.sigpgp,
-			Bank: data.nameBank,
-		  }
-		  await banksModel.addtransaction(entity)
-		  if(data.body.feeBySender===true){
-			await customnerModel.updatepayment({ Amount: (parseInt(paymet[0].Amount) + parseInt(data.body.Amount)).toString() }, { Id: paymet[0].Id });
-		  }else{
-			await customnerModel.updatepayment({ Amount: (parseInt(paymet[0].Amount) + parseInt(data.body.Amount)-1000).toString() }, { Id: paymet[0].Id });
-		  }
-		  return res.json({ sign: cleartext });
+		if (data.sig === sigcompare) {
+			const verified = await openpgp.verify({
+				message: await openpgp.cleartext.readArmored(JSON.parse(data.sigpgp)), // parse armored message
+				publicKeys: (await openpgp.key.readArmored(publicKeyArmored)).keys, // for verification
+			});
+			const { valid } = verified.signatures[0];
+			if (valid) {
+				console.log("signed by key id " + verified.signatures[0].keyid.toHex());
+
+				const privateKeyArmored = MyPGP.privateKeyPGP; // encrypted private key
+				const passphrase = baoson123; // what the private key is encrypted with
+				const {
+					keys: [privateKey],
+				} = await openpgp.key.readArmored(privateKeyArmored);
+
+				await privateKey.decrypt(passphrase);
+				const { data: cleartext } = await openpgp.sign({
+					message: openpgp.cleartext.fromText("NGANHANGBAOSON"), // CleartextMessage or Message object
+					privateKeys: [privateKey], // for signing
+				});
+				let paymet = await banksModel.detail({ Id: data.body.Id });
+
+				let entity = {
+					Amount: data.body.Amount,
+					Fromaccount: data.body.Fromaccount,
+					Content: data.body.Content,
+					Toaccount: data.body.Id,
+					FromName: data.body.FromName,
+					ToName: data.body.ToName,
+					Date: moment().format("YYYY-MM-DD HH:mm:ss"),
+					Sign: data.sigpgp,
+					Bank: data.nameBank,
+				};
+				await banksModel.addtransaction(entity);
+				if (data.body.feeBySender === true) {
+					await customnerModel.updatepayment(
+						{
+							Amount: (
+								parseInt(paymet[0].Amount) + parseInt(data.body.Amount)
+							).toString(),
+						},
+						{ Id: paymet[0].Id }
+					);
+				} else {
+					await customnerModel.updatepayment(
+						{
+							Amount: (
+								parseInt(paymet[0].Amount) +
+								parseInt(data.body.Amount) -
+								1000
+							).toString(),
+						},
+						{ Id: paymet[0].Id }
+					);
+				}
+				return res.json({ sign: cleartext });
+			} else {
+				throw createError(401, "Sign PGP invalid");
+			}
 		} else {
-		  throw createError(401, "Sign PGP invalid");
+			throw createError(401, "Sign is invalid");
 		}
-  
-	  } else {
-		throw createError(401, "Sign is invalid");
-	  }
 	} else {
-	  throw createError(401, "Time Late");
+		throw createError(401, "Time Late");
 	}
-  }
-  );
+});
