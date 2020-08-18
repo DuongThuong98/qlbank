@@ -91,9 +91,9 @@ router.delete("/record", async (req, res) => {
 				notificationTitle: `Thông tin nợ ${debtId} đã được xoá`,
 				notificationContent: `Nhắc nợ ngày ${
 					debt.createdAt
-				} với số tiền ${moneyFormatter.format(debt.amount)} đã được xoá bởi ${
+					} với số tiền ${moneyFormatter.format(debt.amount)} đã được xoá bởi ${
 					req.user.name
-				} với nội dung "${feedbackContent}"`,
+					} với nội dung "${feedbackContent}"`,
 				fromUserId: req.user.accountNumber,
 				fromBankId:
 					updatedBySentUser === 1 ? debt.sentBankId : debt.receivedBankId,
@@ -163,6 +163,25 @@ router.post("/", (req, res) => {
 	newDebt
 		.save()
 		.then((data) => {
+			//when debt Notify is created, creating Notification
+			let notifyModel = {
+				notificationTitle: notificationTitleString,
+				notificationContent: entity.debtContent,
+				fromUserId: entity.sentUserId,
+				fromBankId: 0,
+				toUserId: entity.receivedUserId,
+				toBankId: entity.receivedBankId,
+				isSent: false,
+			};
+
+			//create notify
+			Notification.create(notifyModel, (err, notify) => {
+				if (err) {
+					return res.status(400).json({ message: err });
+				} else {
+					console.log(notify);
+				}
+			});
 			return res.json(data);
 		})
 		.catch((err) => {
