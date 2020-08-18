@@ -426,7 +426,7 @@ router.post("/verify-code", async (req, res) => {
 					Content: tran.content ? tran.content : "",
 					Fromaccount: tran.sentUserId.toString(),
 					FromName: tran.sentUserName,
-					ToName: "username của BAOSONBank",
+					ToName: tran.receivedUserName,
 					feeBySender: tran.isReceiverPaid,
 				};
 
