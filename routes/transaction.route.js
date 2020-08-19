@@ -400,6 +400,7 @@ router.post("/verify-code", async (req, res) => {
 						return result;
 					})
 					.catch((error) => {
+						console.log(error);
 						throw error;
 					});
 			}
@@ -468,7 +469,7 @@ router.post("/verify-code", async (req, res) => {
 							tran.signature = result.data.sign;
 							await tran.save();
 						} else {
-							console.log("cannot verify this fucking message");
+							console.log("Cannot verify");
 							throw new Error("cannot verify that key");
 						}
 					})
