@@ -91,9 +91,9 @@ router.delete("/record", async (req, res) => {
 				notificationTitle: `Thông tin nợ ${debtId} đã được xoá`,
 				notificationContent: `Nhắc nợ ngày ${
 					debt.createdAt
-					} với số tiền ${moneyFormatter.format(debt.amount)} đã được xoá bởi ${
+				} với số tiền ${moneyFormatter.format(debt.amount)} đã được xoá bởi ${
 					req.user.name
-					} với nội dung "${feedbackContent}"`,
+				} với nội dung "${feedbackContent}"`,
 				fromUserId: req.user.accountNumber,
 				fromBankId:
 					updatedBySentUser === 1 ? debt.sentBankId : debt.receivedBankId,
@@ -165,13 +165,16 @@ router.post("/", (req, res) => {
 		.then((data) => {
 			//when debt Notify is created, creating Notification
 			let notifyModel = {
-				notificationTitle: notificationTitleString,
-				notificationContent: entity.debtContent,
-				fromUserId: entity.sentUserId,
+				notificationTitle: `Bạn được nợ bởi ${req.user.name.toUpperCase()}`,
+				notificationContent: `${req.user.name.toUpperCase()} đã tạo cho bạn nhắc nợ số tiền ${moneyFormatter.format(
+					req.body.amount
+				)} với nội dung "${req.body.debtContent}"`,
+				fromUserId: req.user.accountNumber,
 				fromBankId: 0,
-				toUserId: entity.receivedUserId,
-				toBankId: entity.receivedBankId,
+				toUserId: req.body.receivedUserId,
+				toBankId: 0,
 				isSent: false,
+				ts: moment().unix(),
 			};
 
 			//create notify
