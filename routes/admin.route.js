@@ -129,37 +129,7 @@ router.post("/deposit", async (req, res) => {
 			receiverUser.balance = receiverUser.balance + amount;
 			await receiverUser.save();
 
-			//send mail
-			var transporter = nodemailer.createTransport(
-				config.emailTransportOptions
-			);
-
-			//send to receiver
-			var content = "";
-			content += `<div>
-					<h2>Bạn đã nạp ${amount} vào tài khoản.</h2>
-					<h1>Vào lúc: ${tran.createdAt} </h1>
-					<p>Số dư khả dụng: ${receiverUser.balance}</p>
-				</div>`;
-
-			var mailOptions = {
-				from: `huuthoigialai@gmail.com`,
-				to: currentUser.email,
-				subject: "Thông báo nạp tiền vào tài khoản.",
-				html: content,
-			};
-
-			transporter.sendMail(mailOptions, async function (error, info) {
-				if (error) {
-					console.log(error);
-					return res.status(400).json({ success: false });
-				} else {
-					tran.isVerified = true;
-					await tran.save();
-					console.log("Email sent: " + info.response);
-					return res.json({ success: true });
-				}
-			});
+			res.json({ message: "Nạp tiền cho user thành công!" });
 		}
 	});
 });
@@ -249,6 +219,7 @@ router.get("/transactions", async (req, res) => {
 						content: transactions[i].content,
 						isVerified: transactions[i].isVerified,
 						updatedAt: transactions[i].updatedAt,
+						createdAt: transactions[i].createdAt,
 					};
 					data.push(o);
 				}
