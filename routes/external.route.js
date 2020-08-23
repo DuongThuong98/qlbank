@@ -151,7 +151,7 @@ router.post("/SAPHASANBank/transaction", async (req, res) => {
 // --EXTERNAL-SERVER--- nhận request, hash + verify và nạp tiền
 router.post("/transaction", async (req, res) => {
 	// req -> headers [ts, partnerCode, hashedSign] + [sign (req.body-RSA)]
-	// req -> bodyjson: {sentId: _id, bankId: 1, 
+	// req -> bodyjson: {sentId: _id, bankId: 1,
 	//accountNumber: _id, amount: 50000, content: "Tien an 2020", isReceiverPaid: true}
 	// response -> "thành công hay không"
 
@@ -212,10 +212,9 @@ router.post("/transaction", async (req, res) => {
 					.send({ message: "Đã có lỗi xảy ra, vui lòng thử lại!" });
 			}
 			if (user) {
-
 				//cộng tiền vào tài khoản
 				let userNewBalance = user.balance + req.body.amount;
-				if(req.body.isReceiverPaid == true){
+				if (req.body.isReceiverPaid == true) {
 					userNewBalance = userNewBalance - fees;
 				}
 				user.balance = userNewBalance;
@@ -496,9 +495,6 @@ router.post("/transferPGP", async (req, res) => {
 	res.json("Successfully");
 });
 
-
-
-
 module.exports = router;
 
 // "Id": "2750027628572576",
@@ -542,5 +538,3 @@ module.exports = router;
 // 	  throw createError(401, error.response.data.err)
 // 	}
 //   })
-
-

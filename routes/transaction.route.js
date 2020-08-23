@@ -171,11 +171,15 @@ router.post("/", (req, res) => {
 
 			var content = "";
 			content += `<div>
-        <h2>Use the code below to verify information </h2>
-				<h1> ${code}</h1>
-				<p>This code will be expired after 5 minutes!</p>
-				</div>  
-		`;
+					<h2>Hi, ${currentUser.name.toUpperCase()}!</h2>
+					<p>You recently requested to make a new transaction for your SAPHASAN Bank account. You are about to send ${
+						model.amount
+					} to ${model.receivedUserName.toUpperCase()} and here is your OTP code to confirm:</p>
+					<h1> ${code}</h1>
+					<p>If you did not request to create this new transaction, please ignore this email! This code is only valid for the next 5 minutes.</p>
+					<p>Thanks,</p>
+					<p>SAPHASAN Bank Team.</p>
+				</div>`;
 
 			var mailOptions = {
 				from: `huuthoigialai@gmail.com`,
@@ -396,6 +400,7 @@ router.post("/verify-code", async (req, res) => {
 						return result;
 					})
 					.catch((error) => {
+						console.log(error);
 						throw error;
 					});
 			}
@@ -445,29 +450,30 @@ router.post("/verify-code", async (req, res) => {
 					.then(async (result) => {
 						const verified = await openPgp.verify({
 							message: await openPgp.cleartext.readArmored(result.data.sign),
-							publicKeys: (await openPgp.key.readArmored(publicKeyArmored)).keys,
+							publicKeys: (await openPgp.key.readArmored(publicKeyArmored))
+								.keys,
 						});
 						const { valid } = verified.signatures[0];
 						if (valid) {
-							console.log("signed by key id " + verified.signatures[0].keyid.toHex());
+							console.log(
+								"signed by key id " + verified.signatures[0].keyid.toHex()
+							);
 							if (tran.isReceiverPaid) {
 								currentUser.balance = currentUser.balance - tran.amount;
 								await currentUser.save();
 							} else {
-								currentUser.balance =
-									currentUser.balance - tran.amount - fees;
+								currentUser.balance = currentUser.balance - tran.amount - fees;
 								await currentUser.save();
 							}
 
 							tran.signature = result.data.sign;
 							await tran.save();
 						} else {
-							console.log("cannot verify this fucking message");
+							console.log("Cannot verify");
 							throw new Error("cannot verify that key");
 						}
 					})
 					.catch((err) => console.log("error: ", err));
-			
 			}
 
 			break;
