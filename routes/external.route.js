@@ -219,7 +219,6 @@ router.post("/transaction", async (req, res) => {
 					userNewBalance = userNewBalance - fees;
 				}
 				user.balance = userNewBalance;
-
 				await user
 					.save()
 					.then(async (newData) => {
