@@ -1,12 +1,23 @@
 {
-  "monggodb": {
-    "localUrl": "mongodb://localhost:27017/test1",
-    "url": "mongodb+srv://admin:admin@cluster0-rqen3.mongodb.net/test?retryWrites=true&w=majority"
-  },
-  "auth": {
-    "secret": "secretKey",
-    "expiresIn": "10m",
-    "refreshTokenSz": 80
-  }
+	"mongodb": {
+		"localUrl": "mongodb://localhost:27017/InternetBanking",
+		"url": "mongodb+srv://admin:admin@cluster0-rqen3.mongodb.net/InternetBanking?retryWrites=true&w=majority"
+	},
+	"auth": {
+		"secret": "secretKey",
+		"expiresIn": "100m",
+		"refreshTokenSz": 80
+	},
+	"emailTransportOptions": {
+		"host": "smtp.gmail.com",
+		"port": 465,
+		"secure": true,
+		"auth": {
+			"user": "khactrieuhcmus@gmail.com",
+			"pass": "khactrieuserver"
+		},
+		"tls": {
+			"rejectUnauthorized": false
+		}
+	}
 }
-
